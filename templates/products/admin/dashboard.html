@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="mt-5">
+    <h2 class="fw-bold text-danger"><i class="bi bi-shield-lock"></i> Admin Dashboard</h2>
+    <p class="text-muted">Manage your B2B enterprise infrastructure.</p>
+    <hr>
+    
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card bg-dark text-white shadow rounded-4 p-4 text-center">
+                <h3>{{ total_products }}</h3>
+                <p class="mb-3 text-secondary">Total Products</p>
+                <a href="{% url 'admin_product_manage' %}" class="btn btn-danger w-100 fw-bold">Manage Products</a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-light border-secondary shadow rounded-4 p-4 text-center">
+                <h3>0</h3>
+                <p class="mb-3 text-secondary">Total Orders</p>
+                <button class="btn btn-outline-dark w-100 fw-bold" disabled>Order Module Pending</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

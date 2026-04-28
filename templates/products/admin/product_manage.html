@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mt-4 mb-4">
+    <h2 class="fw-bold text-danger">Inventory Management</h2>
+    <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-dark">Back to Dashboard</a>
+</div>
+
+<div class="row">
+    <!-- LEFT SIDE: ADD / EDIT FORM -->
+    <div class="col-lg-4 mb-4">
+        <div class="card shadow-sm border-danger">
+            <div class="card-header bg-danger text-white fw-bold">
+                {% if edit_id %}Editing Product #{{ edit_id }}{% else %}Add New Product{% endif %}
+            </div>
+            <div class="card-body bg-light">
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {% for field in form %}
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">{{ field.label }}</label>
+                            {{ field }}
+                        </div>
+                    {% endfor %}
+                    
+                    <button type="submit" class="btn btn-success w-100 fw-bold">
+                        {% if edit_id %}Save Changes{% else %}Create Product{% endif %}
+                    </button>
+                </form>
+                {% if edit_id %}
+                    <a href="{% url 'admin_product_manage' %}" class="btn btn-outline-secondary w-100 mt-2">Cancel Edit</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- RIGHT SIDE: PRODUCT TABLE & DELETE ACTIONS -->
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-0">
+                <table class="table table-hover table-striped mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Image</th>
+                            <th>Name</th>
+                            <th>Price</th>
+                            <th>Stock</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in products %}
+                        <tr class="align-middle">
+                            <td>
+                                {% if product.image %}
+                                    <img src="{{ product.image.url }}" style="width: 50px; height: 50px; object-fit: cover;" class="rounded">
+                                {% else %}
+                                    <span class="badge bg-secondary">None</span>
+                                {% endif %}
+                            </td>
+                            <td class="fw-bold">{{ product.name }}</td>
+                            <td class="text-success">{{ product.price }}</td>
+                            <td>{{ product.stock }}</td>
+                            <td class="text-end">
+                                <!-- Edit Button -->
+                                <a href="?edit={{ product.id }}" class="btn btn-sm btn-primary">Edit</a>
+                                
+                                <!-- Delete Form (Must be a POST request for security) -->
+                                <form method="POST" class="d-inline" onsubmit="return confirm('Delete {{ product.name }} permanently?');">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="delete_id" value="{{ product.id }}">
+                                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">No inventory found. Use the form to add products.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('input, textarea, select').forEach(e => e.classList.add('form-control'));
+    document.querySelectorAll('input[type="file"]').forEach(e => e.classList.remove('form-control'));
+</script>
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mt-4 mb-4">
+    <h2 class="fw-bold">B2B Marketplace</h2>
+    {% if user.is_staff %}
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-danger shadow-sm">Enter Admin Portal</a>
+    {% endif %}
+</div>
+
+<div class="row">
+    {% for product in products %}
+    <div class="col-md-4 col-lg-3 mb-4">
+        <div class="card h-100 shadow-sm border-0">
+            {% if product.image %}
+                <img src="{{ product.image.url }}" class="card-img-top" style="height: 200px; object-fit: cover;">
+            {% else %}
+                <div class="bg-secondary text-white d-flex align-items-center justify-content-center" style="height: 200px;">No Image</div>
+            {% endif %}
+            <div class="card-body">
+                <h5 class="card-title fw-bold text-truncate">{{ product.name }}</h5>
+                <h6 class="text-success fw-bold">{{ product.price }} ETB</h6>
+                <p class="text-muted small mb-3">Stock: {{ product.stock }} units</p>
+                <a href="{% url 'product_detail' product.pk %}" class="btn btn-outline-primary w-100 fw-bold">View Details</a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center text-muted mt-5">
+        <h4>No products available in the market yet.</h4>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

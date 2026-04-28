@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row align-items-center mt-5 py-5">
+    <div class="col-lg-6 mb-4 mb-lg-0">
+        <h1 class="display-4 fw-bolder text-dark">Welcome to the Future of B2B Trade</h1>
+        <p class="lead text-muted mt-3 mb-4">
+            Connect with top-tier suppliers, explore 3D/AR product models, and process secure payments instantly through Chapa. 
+        </p>
+        
+        {% if user.is_authenticated %}
+            <a href="#" class="btn btn-primary btn-lg px-5 shadow">Browse Marketplace</a>
+        {% else %}
+            <a href="{% url 'register' %}" class="btn btn-primary btn-lg px-5 me-2 shadow">Get Started Now</a>
+            <a href="{% url 'login' %}" class="btn btn-outline-dark btn-lg px-5">Login</a>
+        {% endif %}
+    </div>
+    
+    <div class="col-lg-6 text-center">
+        <!-- Placeholder for a professional hero graphic or 3D AR Model preview -->
+        <div class="p-5 bg-white rounded-4 shadow-sm border">
+            <h3 class="text-secondary mb-3">AI & AR Integration</h3>
+            <p class="text-muted">Interactive 3D Marketplace Hub</p>
+            <div class="bg-light rounded p-5 d-flex align-items-center justify-content-center" style="height: 200px; border: 2px dashed #ccc;">
+                <span class="text-muted fw-bold">3D Model Placeholder</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5 pt-5 text-center">
+    <div class="col-md-4 mb-4">
+        <h4 class="fw-bold">Secure Payments</h4>
+        <p class="text-muted">Integrated seamlessly with Chapa for trusted, localized transactions.</p>
+    </div>
+    <div class="col-md-4 mb-4">
+        <h4 class="fw-bold">AI Powered</h4>
+        <p class="text-muted">Smart product recommendations and market insights built directly into your dashboard.</p>
+    </div>
+    <div class="col-md-4 mb-4">
+        <h4 class="fw-bold">Cross-Platform</h4>
+        <p class="text-muted">Access your entire business from this web dashboard or our native mobile apps.</p>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-5">
+        <div class="card shadow border-0 rounded-3">
+            <div class="card-header bg-primary text-white text-center py-3">
+                <h4 class="mb-0">Secure Login</h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    <!-- Render form professionally with Bootstrap classes -->
+                    {% for field in form %}
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.errors %}
+                                <div class="text-danger small mt-1">{{ field.errors }}</div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                    
+                    <button type="submit" class="btn btn-primary w-100 py-2 mt-3 fw-bold">Sign In</button>
+                </form>
+            </div>
+            <div class="card-footer text-center bg-white py-3">
+                <small>Don't have an account? <a href="{% url 'register' %}" class="text-decoration-none">Register here</a></small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Small script to add Bootstrap classes to Django form inputs automatically -->
+<script>
+    document.querySelectorAll('input').forEach(e => e.classList.add('form-control'));
+</script>
+{% endblock %}

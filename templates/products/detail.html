@@ -1,0 +1,301 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!-- Import the model-viewer component -->
+<script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+
+<style>
+    /* Professional Viewer Styling */
+    .media-container {
+        height: 500px;
+        background: radial-gradient(circle, #ffffff 0%, #f4f4f5 100%);
+        border: 1px solid #eaeaea;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+    
+    .product-img {
+        max-height: 100%;
+        max-width: 100%;
+        object-fit: contain;
+    }
+
+    model-viewer {
+        width: 100%;
+        height: 100%;
+    }
+
+    /* 3-Button Layout Styling */
+    .view-btn {
+        color: #4b5563;
+        font-weight: 600;
+        border-radius: 12px;
+        padding: 10px 20px;
+        transition: 0.3s;
+        border: 1px solid #d1d5db;
+        background: #fff;
+        flex: 1; /* Makes buttons equal width */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    
+    .view-btn.active {
+        background-color: #111827;
+        color: #fff;
+        border-color: #111827;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+    
+    .view-btn:hover:not(.active) {
+        background-color: #f3f4f6;
+    }
+
+    .btn-ar {
+        background: linear-gradient(135deg, #111827 0%, #374151 100%);
+        color: white;
+        border: none;
+    }
+    .btn-ar:hover {
+        box-shadow: 0 6px 15px rgba(17, 24, 39, 0.3);
+        transform: translateY(-2px);
+    }
+</style>
+
+<div class="card shadow-sm border-0 mt-4 p-4 p-md-5 rounded-4 bg-white">
+    <div class="row gx-5">
+        
+        <!-- Media Column -->
+        <div class="col-lg-6 mb-5 mb-lg-0">
+            <!-- Display Box -->
+            <div class="rounded-4 shadow-sm overflow-hidden media-container" id="productMediaContent">
+                
+                <!-- Static Image View -->
+                <div id="photo-view" class="w-100 h-100 d-flex align-items-center justify-content-center {% if not product.ar_model or product.image %}d-block{% else %}d-none{% endif %}">
+                    {% if product.image %}
+                        <img src="{{ product.image.url }}" class="product-img p-3" alt="{{ product.name }}">
+                    {% else %}
+                        <span class="fs-5 text-muted">📸 No Image Available</span>
+                    {% endif %}
+                </div>
+
+                <!-- 3D Viewer -->
+                {% if product.ar_model %}
+                <div id="3d-view" class="w-100 h-100 {% if product.ar_model and not product.image %}d-block{% else %}d-none{% endif %}">
+                    <model-viewer 
+                        id="ar-viewer"
+                        src="{{ product.ar_model.url }}" 
+                        alt="3D model of {{ product.name }}" 
+                        camera-controls 
+                        auto-rotate 
+                        rotation-per-second="30deg"
+                        ar 
+                        ar-modes="webxr scene-viewer quick-look"
+                        environment-image="neutral"
+                        shadow-intensity="1.5">
+                    </model-viewer>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- The 3 Professional Action Buttons -->
+            <div class="d-flex gap-2 mt-4">
+                <button onclick="switchView('photo')" id="btn-photo" class="view-btn {% if not product.ar_model or product.image %}active{% endif %}">
+                    📸 Photo
+                </button>
+                
+                {% if product.ar_model %}
+                <button onclick="switchView('3d')" id="btn-3d" class="view-btn {% if product.ar_model and not product.image %}active{% endif %}">
+                    🧊 3D Model
+                </button>
+
+                <button onclick="handleARClick()" class="view-btn btn-ar">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                    View AR
+                </button>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Product Details Column -->
+        <div class="col-lg-6 d-flex flex-column py-2">
+            <div class="mb-2">
+                <span class="badge bg-dark px-3 py-2 text-uppercase fw-bold rounded-1">B2B Product</span>
+                {% if product.ar_model %}
+                    <span class="badge bg-primary px-3 py-2 rounded-1 ms-2">✨ AR Ready</span>
+                {% endif %}
+            </div>
+            
+            <h1 class="fw-bolder display-5 mt-2 mb-3 text-dark">{{ product.name }}</h1>
+            <h2 class="text-success fw-bold mb-4 display-6">{{ product.price }} <span class="fs-4 text-muted fw-normal">ETB</span></h2>
+            <p class="text-secondary fs-5 mb-4 lh-base">{{ product.description }}</p>
+            
+            <div class="card bg-light border-0 rounded-4 mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted fw-bold text-uppercase">Stock Status</span>
+                        <span class="text-dark fw-bold">{{ product.stock }} Units Available</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pay -->
+            <form action="{% url 'checkout' product.id %}" method="POST" class="mt-auto">
+                {% csrf_token %}
+                <div class="row g-2 align-items-center mb-3">
+                    <div class="col-auto">
+                        <label for="qty" class="col-form-label fw-bold">Qty:</label>
+                    </div>
+                    <div class="col-3">
+                        <input type="number" id="qty" name="quantity" class="form-control text-center fw-bold" value="1" min="1" max="{{ product.stock }}">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg rounded-pill shadow-sm fw-bold w-100 py-3 fs-5 d-flex justify-content-center align-items-center gap-2" {% if product.stock == 0 %}disabled{% endif %}>
+                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    {% if product.stock > 0 %}Pay via Chapa{% else %}Out of Stock{% endif %}
+                </button>
+            </form>
+        </div>
+        
+    </div>
+</div>
+
+<!-- ==========================================
+     AR MODALS & OVERLAYS 
+=========================================== -->
+
+<!-- 1. Desktop QR Code Modal -->
+<div class="modal fade" id="qrModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg rounded-4 text-center p-4">
+      <div class="modal-body">
+        <h3 class="fw-bolder mb-2">Scan to View in AR</h3>
+        <p class="text-muted mb-4">Point your phone's camera at this code to drop this 3D product into your physical space.</p>
+        <div class="p-3 bg-light rounded-4 border d-inline-block mb-4">
+            <img id="qr-image" src="" alt="QR Code" width="200" height="200">
+        </div>
+        <button type="button" class="btn btn-dark w-100 rounded-pill py-2 fw-bold" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 2. Mobile Unsupported Error Modal -->
+<div class="modal fade" id="errorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg rounded-4 text-center p-4">
+        <div class="modal-body">
+          <div class="text-danger mb-3">
+              <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+          </div>
+          <h4 class="fw-bolder mb-2">AR Not Supported</h4>
+          <p class="text-muted small mb-4">Your device does not meet the hardware or software requirements for Augmented Reality.</p>
+          <button type="button" class="btn btn-dark w-100 rounded-pill py-2 fw-bold" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+</div>
+
+<!-- 3. Auto-AR Fullscreen Overlay (For when users scan the QR code) -->
+<div id="auto-ar-overlay" class="position-fixed top-0 start-0 w-100 h-100 bg-dark text-white d-none flex-column align-items-center justify-content-center z-3" style="background: rgba(0,0,0,0.95); cursor: pointer;" onclick="triggerAutoAR()">
+    <div class="mb-4 text-primary" style="animation: bounce 2s infinite;">
+        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+    </div>
+    <h2 class="fw-bolder mb-2">Ready for AR</h2>
+    <p class="text-white-50 lead">Tap anywhere to open your camera</p>
+</div>
+
+<!-- Scripts -->
+<script>
+    // --- 1. Gallery Logic (Photo vs 3D) ---
+    function switchView(mode) {
+        const photoView = document.getElementById('photo-view');
+        const view3d = document.getElementById('3d-view');
+        const btnPhoto = document.getElementById('btn-photo');
+        const btn3d = document.getElementById('btn-3d');
+
+        if(mode === 'photo') {
+            photoView.classList.replace('d-none', 'd-block');
+            if(view3d) view3d.classList.replace('d-block', 'd-none');
+            
+            btnPhoto.classList.add('active');
+            if(btn3d) btn3d.classList.remove('active');
+        } else {
+            photoView.classList.replace('d-block', 'd-none');
+            if(view3d) view3d.classList.replace('d-none', 'd-block');
+            
+            btnPhoto.classList.remove('active');
+            if(btn3d) btn3d.classList.add('active');
+        }
+    }
+
+    // --- 2. Enterprise AR Logic ---
+    const viewer = document.getElementById('ar-viewer');
+    const qrModal = new bootstrap.Modal(document.getElementById('qrModal'));
+    const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+
+    function handleARClick() {
+        if (!viewer) return;
+        
+        // Detect if user is on a mobile device
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+        if (isMobile) {
+            // Mobile: Attempt to open the camera
+            if (viewer.canActivateAR) {
+                viewer.activateAR();
+            } else {
+                errorModal.show();
+            }
+        } else {
+            // Desktop: Generate QR Code for Phone Handoff
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('auto_ar', 'true'); // Tells the phone to launch AR immediately
+            
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(currentUrl.toString())}&margin=10`;
+            document.getElementById('qr-image').src = qrUrl;
+            qrModal.show();
+        }
+    }
+
+    // --- 3. QR Code Scan Auto-Trigger Logic ---
+    window.onload = function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // If someone scanned the QR code, the URL will have ?auto_ar=true
+        if (urlParams.get('auto_ar') === 'true') {
+            // Switch to 3D mode first
+            switchView('3d');
+            
+            // Show the "Tap to Launch AR" black screen overlay
+            const overlay = document.getElementById('auto-ar-overlay');
+            overlay.classList.replace('d-none', 'd-flex');
+        }
+    };
+
+    function triggerAutoAR() {
+        // Hide the overlay
+        const overlay = document.getElementById('auto-ar-overlay');
+        overlay.classList.replace('d-flex', 'd-none');
+        
+        // Launch camera
+        if (viewer && viewer.canActivateAR) {
+            viewer.activateAR();
+        } else {
+            errorModal.show();
+        }
+    }
+
+    // Catch if AR fails after opening
+    if(viewer) {
+        viewer.addEventListener('ar-status', (event) => {
+            if (event.detail.status === 'failed') {
+                errorModal.show();
+            }
+        });
+    }
+</script>
+{% endblock %}

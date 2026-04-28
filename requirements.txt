@@ -1,0 +1,35 @@
+# --- CORE WEB SERVER ---
+Django>=5.1.1
+gunicorn
+daphne
+asgiref
+python-dotenv
+whitenoise
+django-cors-headers
+djangorestframework
+
+# --- DATABASE & STORAGE ---
+dj-database-url
+psycopg2-binary
+pgvector
+cloudinary
+django-cloudinary-storage
+
+# --- REAL-TIME (CHAT) ---
+channels
+channels-redis
+redis
+
+# --- PAYMENTS & APIS ---
+stripe
+requests
+groq
+
+# --- UTILITIES ---
+pillow
+qrcode
+sqlparse
+cryptography
+
+psycopg2-binary 
+djangorestframework-simplejwt
