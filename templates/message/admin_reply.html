@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    .admin-wrapper { max-width: 800px; margin: 40px auto 80px; font-family: 'Jost', sans-serif; padding: 0 20px; }
+    
+    .back-link { display: inline-block; color: #888; text-decoration: none; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; transition: color 0.3s; }
+    .back-link:hover { color: #976f44; }
+
+    .admin-title { font-family: 'Playfair Display', serif; font-size: 32px; color: #1a1a1a; margin: 0 0 30px 0; }
+    
+    .message-thread-box { background: #fbf9f6; border-left: 4px solid #976f44; padding: 30px; margin-bottom: 40px; }
+    .message-subject { font-size: 18px; font-weight: 600; color: #1a1a1a; margin: 0 0 15px 0; }
+    .message-body { font-size: 15px; color: #444; line-height: 1.6; margin: 0 0 20px 0; }
+    .message-meta { font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+
+    .admin-reply-card { background: #fff; border: 1px solid #f0f0f0; padding: 40px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
+    .admin-reply-title { font-size: 16px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 25px; color: #1a1a1a; }
+
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 600; color: #1a1a1a; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .admin-textarea { width: 100%; min-height: 150px; padding: 15px; font-family: 'Jost', sans-serif; font-size: 14px; border: 1px solid #e5e5e5; background: #fafafa; transition: border 0.3s; box-sizing: border-box; resize: vertical; }
+    .admin-textarea:focus { border-color: #976f44; outline: none; background: #fff; }
+
+    .admin-btn { display: inline-block; background-color: #976f44; color: #fff; padding: 14px 28px; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; border: none; cursor: pointer; transition: 0.3s ease; width: 100%; }
+    .admin-btn:hover { background-color: #1a1a1a; }
+</style>
+
+<div class="admin-wrapper">
+    <a href="{% url 'admin_feedback_list' %}" class="back-link">&larr; Back to Messages</a>
+    
+    <h2 class="admin-title">Respond to {{ feedback.user.username }}</h2>
+    
+    <!-- Show User's Original Message -->
+    <div class="message-thread-box">
+        <h3 class="message-subject">Subject: {{ feedback.subject }}</h3>
+        <div class="message-body">
+            {{ feedback.message|linebreaks }}
+        </div>
+        <div class="message-meta">Sent on: {{ feedback.created_at|date:"F d, Y - H:i" }}</div>
+    </div>
+
+    <!-- Admin Reply Form -->
+    <div class="admin-reply-card">
+        <h4 class="admin-reply-title">Admin Response</h4>
+        <form method="POST">
+            {% csrf_token %}
+            
+            {% for field in form %}
+                <div class="form-group">
+                    <label>{{ field.label }}</label>
+                    {{ field }}
+                </div>
+            {% endfor %}
+            
+            <button type="submit" class="admin-btn">Send Reply</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Ensure the generated textarea follows the custom design
+    document.querySelectorAll('textarea').forEach(e => {
+        e.removeAttribute('class');
+        e.classList.add('admin-textarea');
+    });
+</script>
+{% endblock %}

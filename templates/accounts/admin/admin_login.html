@@ -1,37 +1,56 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="row justify-content-center mt-5">
-    <div class="col-md-5">
-        <div class="card shadow-lg border-danger rounded-3 border-2">
-            <div class="card-header bg-danger text-white text-center py-3">
-                <h4 class="mb-0 fw-bold">Admin Secure Login</h4>
-            </div>
-            <div class="card-body p-4 bg-dark text-white">
-                <form method="POST">
-                    {% csrf_token %}
-                    
-                    {% for field in form %}
-                        <div class="mb-3">
-                            <label class="form-label fw-bold text-light">{{ field.label }}</label>
-                            {{ field }}
-                            {% if field.errors %}
-                                <div class="text-warning small mt-1">{{ field.errors }}</div>
-                            {% endif %}
-                        </div>
-                    {% endfor %}
-                    
-                    <button type="submit" class="btn btn-danger w-100 py-2 mt-3 fw-bold">Authenticate</button>
-                </form>
-            </div>
-            <div class="card-footer text-center bg-dark text-secondary py-3 border-top border-secondary">
-                <small>Restricted Area. <a href="{% url 'login' %}" class="text-decoration-none text-info">Normal user login</a></small>
-            </div>
+<style>
+    .admin-auth-wrapper { max-width: 450px; margin: 60px auto 80px; font-family: 'Jost', sans-serif; padding: 0 20px; }
+    .admin-auth-card { background: #1a1a1a; border: 1px solid #333; padding: 40px; box-shadow: 0 15px 40px rgba(0,0,0,0.15); border-top: 4px solid #976f44; }
+    .admin-auth-title { font-family: 'Playfair Display', serif; font-size: 28px; color: #fff; margin: 0 0 30px 0; text-align: center; }
+    
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; font-size: 12px; font-weight: 600; color: #ccc; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+    
+    .admin-auth-input { width: 100%; padding: 14px 15px; font-family: 'Jost', sans-serif; font-size: 14px; border: 1px solid #444; background: #222; color: #fff; transition: border 0.3s; box-sizing: border-box; }
+    .admin-auth-input:focus { border-color: #976f44; outline: none; background: #2a2a2a; }
+    
+    .admin-auth-btn { display: block; width: 100%; background-color: #976f44; color: #fff; padding: 16px; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; border: none; cursor: pointer; transition: 0.3s ease; margin-top: 30px; text-align: center; }
+    .admin-auth-btn:hover { background-color: #fff; color: #1a1a1a; }
+    
+    .auth-error { color: #e57373; font-size: 12px; margin-top: 6px; font-weight: 500; }
+    .admin-auth-footer { text-align: center; margin-top: 25px; font-size: 13px; color: #888; border-top: 1px solid #333; padding-top: 20px; text-transform: uppercase; letter-spacing: 1px; }
+    .admin-auth-footer a { color: #976f44; text-decoration: none; font-weight: 600; transition: color 0.3s; }
+    .admin-auth-footer a:hover { color: #fff; }
+</style>
+
+<div class="admin-auth-wrapper">
+    <div class="admin-auth-card">
+        <h4 class="admin-auth-title">Admin Secure Login</h4>
+        
+        <form method="POST">
+            {% csrf_token %}
+            
+            {% for field in form %}
+                <div class="form-group">
+                    <label>{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <div class="auth-error">{{ field.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            
+            <button type="submit" class="admin-auth-btn">Authenticate</button>
+        </form>
+        
+        <div class="admin-auth-footer">
+            Restricted Area. <a href="{% url 'login' %}">Normal Login</a>
         </div>
     </div>
 </div>
 
 <script>
-    document.querySelectorAll('input').forEach(e => e.classList.add('form-control'));
+    document.querySelectorAll('input:not([type="hidden"]):not([type="search"]):not([type="submit"])').forEach(e => {
+        e.removeAttribute('class');
+        e.classList.add('admin-auth-input');
+    });
 </script>
 {% endblock %}

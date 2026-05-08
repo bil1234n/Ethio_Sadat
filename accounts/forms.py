@@ -3,6 +3,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 import os
+from .models import UserProfile
 
 class AdminRegistrationForm(UserCreationForm):
     passcode = forms.CharField(
@@ -27,3 +28,23 @@ class AdminRegistrationForm(UserCreationForm):
             raise ValidationError("Invalid Admin Passcode! Access Denied.")
             
         return passcode
+    
+
+class UserUpdateForm(forms.ModelForm):
+     # Explicitly define username as disabled
+    username = forms.CharField(
+        disabled=True, 
+        help_text="Your username cannot be changed."
+    )
+    
+    # Explicitly add email and make it required (optional, but good practice)
+    email = forms.EmailField(required=True)
+
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'first_name', 'last_name']
+
+class UserProfileUpdateForm(forms.ModelForm):
+    class Meta:
+        model = UserProfile
+        fields = ['company_name', 'phone_number']

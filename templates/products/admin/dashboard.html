@@ -1,26 +1,135 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="mt-5">
-    <h2 class="fw-bold text-danger"><i class="bi bi-shield-lock"></i> Admin Dashboard</h2>
-    <p class="text-muted">Manage your B2B enterprise infrastructure.</p>
-    <hr>
+<style>
+    /* Custom Pure CSS Dashboard Styling - NO BOOTSTRAP */
+    .admin-dashboard-wrapper {
+        padding: 40px 20px 80px 20px;
+        font-family: 'Jost', sans-serif;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
     
-    <div class="row mt-4">
-        <div class="col-md-4">
-            <div class="card bg-dark text-white shadow rounded-4 p-4 text-center">
-                <h3>{{ total_products }}</h3>
-                <p class="mb-3 text-secondary">Total Products</p>
-                <a href="{% url 'admin_product_manage' %}" class="btn btn-danger w-100 fw-bold">Manage Products</a>
+    .admin-dashboard-intro {
+        text-align: center;
+        margin-bottom: 50px;
+        color: #666;
+        font-size: 16px;
+        letter-spacing: 0.5px;
+    }
+
+    .admin-metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 30px;
+    }
+
+    .admin-metric-card {
+        background-color: #ffffff;
+        border: 1px solid #f0f0f0;
+        padding: 50px 30px;
+        text-align: center;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+    }
+
+    .admin-metric-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06);
+        border-color: #e5e5e5;
+    }
+
+    .admin-icon-wrapper {
+        width: 80px;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        font-size: 32px;
+        margin-bottom: 25px;
+        background-color: #fbf9f6; /* Very subtle gold/tan tint to match site */
+        color: #976f44; /* Matches your custom button color */
+    }
+
+    .admin-metric-number {
+        font-size: 54px;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin: 0 0 10px 0;
+        line-height: 1;
+        font-family: 'Playfair Display', serif; /* Using your custom serif font */
+    }
+
+    .admin-metric-label {
+        font-size: 14px;
+        font-weight: 500;
+        color: #888;
+        margin: 0 0 35px 0;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+    }
+
+    .admin-btn {
+        display: block;
+        width: 100%;
+        background-color: #976f44;
+        color: #ffffff;
+        padding: 16px 20px;
+        font-size: 13px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        text-decoration: none;
+        transition: background-color 0.3s ease, color 0.3s ease;
+        margin-top: auto;
+        box-sizing: border-box;
+    }
+
+    .admin-btn:hover {
+        background-color: #1a1a1a;
+        color: #ffffff;
+    }
+</style>
+
+<div class="admin-dashboard-wrapper">
+    <p class="admin-dashboard-intro">Overview and management of your enterprise infrastructure.</p>
+    
+    <div class="admin-metrics-grid">
+        
+        <!-- Products Card -->
+        <div class="admin-metric-card">
+            <div class="admin-icon-wrapper">
+                <i class="fa-solid fa-box-open"></i>
             </div>
+            <h3 class="admin-metric-number">{{ total_products }}</h3>
+            <p class="admin-metric-label">Total Products</p>
+            <a href="{% url 'admin_product_manage' %}" class="admin-btn">Manage Products</a>
         </div>
-        <div class="col-md-4">
-            <div class="card bg-light border-secondary shadow rounded-4 p-4 text-center">
-                <h3>0</h3>
-                <p class="mb-3 text-secondary">Total Orders</p>
-                <button class="btn btn-outline-dark w-100 fw-bold" disabled>Order Module Pending</button>
+
+        <!-- Orders Card -->
+        <div class="admin-metric-card">
+            <div class="admin-icon-wrapper">
+                <i class="fa-solid fa-cart-shopping"></i>
             </div>
+            <h3 class="admin-metric-number">{{ total_orders }}</h3>
+            <p class="admin-metric-label">Total Orders</p>
+            <a href="{% url 'manage_orders' %}" class="admin-btn">Manage Orders</a>
         </div>
+
+        <!-- Messages/Feedback Card -->
+        <div class="admin-metric-card">
+            <div class="admin-icon-wrapper">
+                <i class="fa-solid fa-envelope-open-text"></i>
+            </div>
+            <h3 class="admin-metric-number">{{ total_messages }}</h3>
+            <p class="admin-metric-label">User Feedback</p>
+            <a href="{% url 'admin_feedback_list' %}" class="admin-btn">Manage Feedback</a>
+        </div>
+
     </div>
 </div>
 {% endblock %}

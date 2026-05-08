@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    .admin-wrapper { max-width: 1200px; margin: 40px auto 80px; font-family: 'Jost', sans-serif; padding: 0 20px; }
+    .admin-header-flex { margin-bottom: 30px; }
+    .admin-title { font-family: 'Playfair Display', serif; font-size: 36px; color: #1a1a1a; margin: 0; }
+    
+    .admin-card { background: #fff; border: 1px solid #f0f0f0; box-shadow: 0 4px 15px rgba(0,0,0,0.02); overflow-x: auto; }
+    
+    .premium-table { width: 100%; border-collapse: collapse; }
+    .premium-table th { background: #fbf9f6; color: #888; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; padding: 15px 20px; text-align: left; border-bottom: 1px solid #e5e5e5; }
+    .premium-table td { padding: 15px 20px; border-bottom: 1px solid #f0f0f0; color: #444; font-size: 14px; vertical-align: middle; }
+    .premium-table tr:hover td { background-color: #fafafa; }
+    
+    .status-badge { display: inline-block; padding: 4px 10px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; border-radius: 3px; }
+    .badge-replied { background: #e8f5e9; color: #2e7d32; }
+    .badge-needs-reply { background: #fff3e0; color: #e65100; }
+
+    .admin-btn-sm { display: inline-block; background-color: #976f44; color: #fff; padding: 8px 16px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; border: none; cursor: pointer; transition: 0.3s ease; }
+    .admin-btn-sm:hover { background-color: #1a1a1a; }
+    .admin-btn-outline { background-color: transparent; color: #1a1a1a; border: 1px solid #1a1a1a; }
+    .admin-btn-outline:hover { background-color: #1a1a1a; color: #fff; }
+</style>
+
+<div class="admin-wrapper">
+    <div class="admin-header-flex">
+        <h2 class="admin-title">Message Management</h2>
+    </div>
+
+    <div class="admin-card">
+        <table class="premium-table">
+            <thead>
+                <tr>
+                    <th>Status</th>
+                    <th>User</th>
+                    <th>Subject</th>
+                    <th>Date Sent</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in feedbacks %}
+                <tr>
+                    <td>
+                        {% if item.is_replied %}
+                            <span class="status-badge badge-replied">Replied</span>
+                        {% else %}
+                            <span class="status-badge badge-needs-reply">Needs Reply</span>
+                        {% endif %}
+                    </td>
+                    <td style="font-weight: 600; color: #1a1a1a;">{{ item.user.username }}</td>
+                    <td>{{ item.subject }}</td>
+                    <td style="color: #888; font-size: 13px;">{{ item.created_at|date:"M d, Y H:i" }}</td>
+                    <td>
+                        <a href="{% url 'admin_reply_feedback' item.id %}" class="admin-btn-sm {% if item.is_replied %}admin-btn-outline{% endif %}">
+                            {% if item.is_replied %}View Reply{% else %}Reply Now{% endif %}
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" style="text-align: center; padding: 40px; color: #888;">No messages found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

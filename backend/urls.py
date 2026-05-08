@@ -4,16 +4,22 @@ from django.urls import path, include
 from django.views.generic import TemplateView
 from django.conf import settings
 from django.conf.urls.static import static
+from products import views as product_views 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('accounts.urls')),
-    path('products/', include('products.urls')),
-    
-    # Add Orders URLs
+    path('products/', include('products.urls'), name='products'),
     path('orders/', include('orders.urls')), 
+    path('', product_views.home_view, name='home'),
+    path('about/', TemplateView.as_view(template_name='about.html'), name='about'),
     
-    path('', TemplateView.as_view(template_name='home.html'), name='home'),
+    # CHANGED: Points to the dynamic app instead of TemplateView
+    path('socialMedia/', include('socialMedia.urls')), 
+    
+    path('api/', include('api.urls')),
+    
+    path('message/', include('message.urls')), 
 ]
 
 if settings.DEBUG:

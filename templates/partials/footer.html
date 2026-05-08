@@ -1,0 +1,85 @@
+{% load static %} 
+<footer class="footer-section-2">
+    <div class="footer-2-top">
+        <footer class="section-gap-120">
+            <div class="container w-container">
+                <div class="w-layout-grid footer-top-grid">
+                    <div class="footer-top-single-widget">
+                        <a href="{% url 'home' %}" class="footer-2-logo-link w-inline-block">
+                            <img src="{% static 'img/ethio_sadat.png' %}" loading="lazy" alt="Farnic Logo" class="footer-logo">
+                        </a>
+                        <p class="footer-text">
+                            Bespoke Arabian Mejlis crafted with precision and elegance.
+                        </p>
+                        <div class="footer-social">
+                            <div class="footer-social-title-block">
+                                <h3 class="footer-social-title">Follow us</h3>
+                                <div class="footer-social-title-dash"></div>
+                            </div>
+                            <ul role="list" class="social-link-list w-list-unstyled">
+                                <li class="social-link-item">
+                                    <a href="https://web.facebook.com/p/Ethio-sadat-arabian-mejlis" class="social-link-block w-inline-block" target="_blank">
+                                        <img src="https://cdn.prod.website-files.com/62d243bdaa648f8b5efa8fc1/62d7eb3a099abeded04a95d9_facebook-icon-black.svg" loading="lazy" alt="Facebook Icon" class="social-link-image">
+                                    </a>
+                                </li>
+                                <li class="social-link-item">
+                                    <a href="https://www.instagram.com/ethiosadat22/" class="social-link-block w-inline-block" target="_blank">
+                                        <img src="https://cdn.prod.website-files.com/62d243bdaa648f8b5efa8fc1/62d7eb3a2519d7bb489b41be_inctagram-icon-black.svg" loading="lazy" alt="Instagram Icon" class="social-link-image">
+                                    </a>
+                                </li>
+                                <li class="social-link-item">
+                                    <a href="https://www.tiktok.com/@ethiosadat" class="social-link-block w-inline-block" target="_blank">
+                                        <img src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/tiktok.svg" loading="lazy" alt="TikTok Icon" style="width: 18px !important;" class="social-link-image">
+                                    </a>
+                                </li>
+                                <li class="social-link-item">
+                                    <a href="https://t.me/Ethiosadat23" class="social-link-block w-inline-block" target="_blank">
+                                        <img src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/telegram.svg" loading="lazy" alt="Telegram Icon" style="width: 18px !important;" class="social-link-image">
+                                    </a>
+                                </li>
+                                <li class="social-link-item">
+                                    <a href="https://www.youtube.com/@ethiosadatarebyanmejlis447" class="social-link-block w-inline-block" target="_blank">
+                                        <img src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/youtube.svg" loading="lazy" alt="YouTube Icon" style="width: 20px !important;" class="social-link-image">
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="footer-top-single-widget">
+                        <h3 class="footer-widget-title">Company</h3>
+                        <ul role="list" class="footer-nav-list w-list-unstyled">
+                            <li class="footer-list-item"><a href="{% url 'home' %}" class="footer-nav-link">Home</a></li>
+                            <li class="footer-list-item"><a href="{% url 'about' %}" class="footer-nav-link">About Us</a></li>
+                            <li class="footer-list-item"><a href="{% url 'socialMedia:index' %}" class="footer-nav-link">Social Media</a></li>
+                            <li class="footer-list-item"><a href="{% url 'contact' %}" class="footer-nav-link">Contact</a></li>
+                            <li class="footer-list-item"><a href="{% url 'login' %}" class="footer-nav-link">Login</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-top-single-widget">
+                        <h3 class="footer-widget-title">Products</h3>
+                        <ul role="list" class="footer-nav-list w-list-unstyled">
+                            {% for cat in available_categories|slice:":5" %}
+                                <li class="footer-list-item">
+                                    <a href="{% url 'products' %}?category={{ cat }}" class="footer-nav-link">{{ cat }}</a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="footer-top-single-widget">
+                        <h3 class="footer-widget-title">Contact Us</h3>
+                        <a href="https://maps.app.goo.gl/f4dufgrCPQCTiCpR6" class="footer-address margin-top" style="display:block; margin-bottom:15px;">Ethiopia Addis Ababa, Kolfe Keranio, Bethel, Ethio Sadat Arabian Mejlis</a>
+                        <a href="tel:+251906020606" class="footer-phone">+(251) 906 020 606</a>
+                        <a href="https://www.ethioSadat.com" target="_blank" class="footer-site-url">www.ethioSadat.com</a>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+    <div class="footer-bottom">
+        <div class="copyright-block">
+            <div class="container w-container">
+                <p class="copyright-text">© <a href="https://ethioSadat.com" target="_blank" class="copyright-link"><strong>Ethio Sadat</strong></a> 2026 design and developed by <a href="https://bil-portfolio.netlify.app/" target="_blank" class="copyright-link"><strong>Bilal Nesru</strong></a>. Powered by <a href="https://bilyonarc.netlify.app/" target="_blank" class="copyright-link"><strong>BilyonArc</strong></a>.</p>
+            </div>
+        </div>
+    </div>
+</footer>

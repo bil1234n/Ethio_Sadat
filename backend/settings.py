@@ -13,7 +13,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-fallback-key')
 
 # DEBUG is True locally, but False on Render
-DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
+DEBUG = True
 
 # Allow Render and Localhost
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.onrender.com']
@@ -24,6 +24,14 @@ if RENDER_EXTERNAL_HOSTNAME:
 # CSRF Trust for Render URLs
 CSRF_TRUSTED_ORIGINS = ['https://*.onrender.com']
 
+CORS_ALLOW_ALL_ORIGINS = True
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
+}
+
 
 # Application definition
 
@@ -33,17 +41,28 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
+    
+    'django.contrib.staticfiles',   
+    'cloudinary_storage',           
+    
+    'cloudinary',    
+           
     'rest_framework',
+    'rest_framework_simplejwt',
     'corsheaders',
     'api',
     'accounts',
     'products',
     'orders',
+    
+    'socialMedia',
+    'message',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware', 
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -66,6 +85,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                
+                'products.context_processors.global_categories',
             ],
         },
     },
@@ -76,11 +97,14 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 # --- DATABASE ---
 DATABASES = {
-    'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL', 'postgresql://postgres:Bilal1234@127.0.0.1:5432/asortie_db'),
-        conn_max_age=600,
-        ssl_require=True if os.environ.get('DATABASE_URL') else False
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'furniture_db_2',
+        'USER': 'postgres',        # Default user
+        'PASSWORD': 'Bilal1234', # <--- PUT YOUR POSTGRES PASSWORD HERE
+        'HOST': 'localhost',
+        'PORT': '5432',
+    }
 }
 
 
@@ -115,10 +139,14 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+# --- STATIC FILES (CSS/JS) ---
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -135,3 +163,27 @@ mimetypes.add_type("model/vnd.usdz+zip", ".usdz")
 
 
 CHAPA_SECRET_KEY = os.environ.get('CHAPA_SECRET_KEY')
+
+# 1. Map your .env variables to Cloudinary config
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
+    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
+}
+
+# 2. Correctly assign Cloudinary for Media and WhiteNoise for Static
+STORAGES = {
+    "default": {
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage", # <--- FIXED THIS
+    },
+}
+
+
+YOUTUBE_API_KEY = os.environ.get('YOUTUBE_API_KEY')
+IG_ACCESS_TOKEN = os.environ.get('IG_ACCESS_TOKEN')
+IG_USER_ID = os.environ.get('IG_USER_ID')
+FB_ACCESS_TOKEN = os.environ.get('FB_ACCESS_TOKEN')
+FB_PAGE_ID = os.environ.get('FB_PAGE_ID')

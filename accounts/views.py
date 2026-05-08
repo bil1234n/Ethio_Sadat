@@ -3,7 +3,9 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib import messages
-from .forms import AdminRegistrationForm
+from django.contrib.auth.decorators import login_required 
+from .forms import AdminRegistrationForm, UserUpdateForm, UserProfileUpdateForm
+
 
 def register_view(request):
     # Prevent logged-in users from viewing register page
@@ -128,3 +130,29 @@ def admin_login_view(request):
         form = AuthenticationForm()
         
     return render(request, 'accounts/admin/admin_login.html', {'form': form})
+
+
+@login_required
+def profile_view(request):
+    if request.method == 'POST':
+        # Pass the POST data and the current user/profile instances
+        u_form = UserUpdateForm(request.POST, instance=request.user)
+        p_form = UserProfileUpdateForm(request.POST, instance=request.user.profile)
+        
+        if u_form.is_valid() and p_form.is_valid():
+            u_form.save()
+            p_form.save()
+            messages.success(request, "Your profile has been updated successfully!")
+            return redirect('profile') # Redirect back to profile page
+        else:
+            messages.error(request, "Please correct the errors below.")
+    else:
+        # If it's a GET request, populate forms with the user's current data (View mode)
+        u_form = UserUpdateForm(instance=request.user)
+        p_form = UserProfileUpdateForm(instance=request.user.profile)
+
+    context = {
+        'u_form': u_form,
+        'p_form': p_form
+    }
+    return render(request, 'accounts/profile.html', context)

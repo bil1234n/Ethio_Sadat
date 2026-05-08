@@ -1,92 +1,137 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mt-4 mb-4">
-    <h2 class="fw-bold text-danger">Inventory Management</h2>
-    <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-dark">Back to Dashboard</a>
-</div>
+<style>
+    .admin-wrapper { max-width: 1200px; margin: 40px auto 80px; font-family: 'Jost', sans-serif; padding: 0 20px; }
+    .admin-header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px; }
+    .admin-title { font-family: 'Playfair Display', serif; font-size: 36px; color: #1a1a1a; margin: 0; }
+    
+    .admin-btn { display: inline-block; background-color: #976f44; color: #fff; padding: 12px 24px; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; text-decoration: none; border: none; cursor: pointer; transition: 0.3s ease; text-align: center; }
+    .admin-btn:hover { background-color: #1a1a1a; color: #fff; }
+    .admin-btn-outline { background-color: transparent; color: #1a1a1a; border: 1px solid #1a1a1a; }
+    .admin-btn-outline:hover { background-color: #1a1a1a; color: #fff; }
+    .admin-btn-sm { padding: 8px 12px; font-size: 11px; }
+    .admin-btn-danger { background-color: #d9534f; }
+    .admin-btn-danger:hover { background-color: #c9302c; }
 
-<div class="row">
-    <!-- LEFT SIDE: ADD / EDIT FORM -->
-    <div class="col-lg-4 mb-4">
-        <div class="card shadow-sm border-danger">
-            <div class="card-header bg-danger text-white fw-bold">
-                {% if edit_id %}Editing Product #{{ edit_id }}{% else %}Add New Product{% endif %}
-            </div>
-            <div class="card-body bg-light">
-                <form method="POST" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    {% for field in form %}
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">{{ field.label }}</label>
-                            {{ field }}
-                        </div>
-                    {% endfor %}
-                    
-                    <button type="submit" class="btn btn-success w-100 fw-bold">
-                        {% if edit_id %}Save Changes{% else %}Create Product{% endif %}
-                    </button>
-                </form>
-                {% if edit_id %}
-                    <a href="{% url 'admin_product_manage' %}" class="btn btn-outline-secondary w-100 mt-2">Cancel Edit</a>
-                {% endif %}
-            </div>
-        </div>
+    .admin-grid { display: grid; grid-template-columns: 320px 1fr; gap: 30px; align-items: start; }
+    @media (max-width: 991px) { .admin-grid { grid-template-columns: 1fr; } }
+
+    .admin-card { background: #fff; border: 1px solid #f0f0f0; padding: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
+    .admin-card-title { font-size: 16px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 25px; border-bottom: 2px solid #fbf9f6; padding-bottom: 15px; }
+
+    .admin-wrapper .form-group { margin-bottom: 20px; }
+    .admin-wrapper .form-group label { display: block; font-size: 13px; font-weight: 600; color: #1a1a1a; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .admin-wrapper .admin-input { width: 100%; padding: 12px 15px; font-family: 'Jost', sans-serif; font-size: 14px; border: 1px solid #e5e5e5; background: #fafafa; transition: border 0.3s; box-sizing: border-box; }
+    .admin-wrapper .admin-input:focus { border-color: #976f44; outline: none; background: #fff; }
+
+    .premium-table { width: 100%; border-collapse: collapse; }
+    .premium-table th { background: #fbf9f6; color: #888; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; padding: 15px; text-align: left; border-bottom: 1px solid #e5e5e5; }
+    .premium-table td { padding: 15px; border-bottom: 1px solid #f0f0f0; color: #444; font-size: 14px; vertical-align: middle; }
+    .premium-table tr:hover td { background-color: #fafafa; }
+
+    .status-badge { display: inline-block; padding: 4px 10px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; border-radius: 3px; }
+    .badge-success { background: #e8f5e9; color: #2e7d32; }
+    .badge-neutral { background: #f5f5f5; color: #616161; }
+    .badge-info { background: #e3f2fd; color: #1565c0; }
+
+    .product-img-thumb { width: 45px; height: 45px; object-fit: cover; border-radius: 4px; border: 1px solid #eee; }
+    .action-group { display: flex; gap: 8px; }
+</style>
+
+<div class="admin-wrapper">
+    <div class="admin-header-flex">
+        <h2 class="admin-title">Inventory Management</h2>
+        <a href="{% url 'admin_dashboard' %}" class="admin-btn admin-btn-outline">Back to Dashboard</a>
     </div>
 
-    <!-- RIGHT SIDE: PRODUCT TABLE & DELETE ACTIONS -->
-    <div class="col-lg-8">
-        <div class="card shadow-sm border-0">
-            <div class="card-body p-0">
-                <table class="table table-hover table-striped mb-0">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Image</th>
-                            <th>Name</th>
-                            <th>Price</th>
-                            <th>Stock</th>
-                            <th class="text-end">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for product in products %}
-                        <tr class="align-middle">
-                            <td>
-                                {% if product.image %}
-                                    <img src="{{ product.image.url }}" style="width: 50px; height: 50px; object-fit: cover;" class="rounded">
-                                {% else %}
-                                    <span class="badge bg-secondary">None</span>
-                                {% endif %}
-                            </td>
-                            <td class="fw-bold">{{ product.name }}</td>
-                            <td class="text-success">{{ product.price }}</td>
-                            <td>{{ product.stock }}</td>
-                            <td class="text-end">
-                                <!-- Edit Button -->
-                                <a href="?edit={{ product.id }}" class="btn btn-sm btn-primary">Edit</a>
-                                
-                                <!-- Delete Form (Must be a POST request for security) -->
-                                <form method="POST" class="d-inline" onsubmit="return confirm('Delete {{ product.name }} permanently?');">
+    <div class="admin-grid">
+        <!-- LEFT SIDE: ADD / EDIT FORM -->
+        <div class="admin-card">
+            <h3 class="admin-card-title">
+                {% if edit_id %}Editing Product #{{ edit_id }}{% else %}Add New Product{% endif %}
+            </h3>
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                {% for field in form %}
+                    <div class="form-group">
+                        <label>{{ field.label }}</label>
+                        {{ field }}
+                    </div>
+                {% endfor %}
+                
+                <button type="submit" class="admin-btn" style="width: 100%; margin-top: 10px;">
+                    {% if edit_id %}Save Changes{% else %}Create Product{% endif %}
+                </button>
+            </form>
+            {% if edit_id %}
+                <a href="{% url 'admin_product_manage' %}" class="admin-btn admin-btn-outline" style="width: 100%; margin-top: 10px;">Cancel Edit</a>
+            {% endif %}
+        </div>
+
+        <!-- RIGHT SIDE: PRODUCT TABLE -->
+        <div class="admin-card" style="padding: 0; overflow-x: auto;">
+            <table class="premium-table">
+                <thead>
+                    <tr>
+                        <th>Image</th>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th>Status</th>
+                        <th>Price</th>
+                        <th>Stock</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in products %}
+                    <tr>
+                        <td>
+                            {% if product.image %}
+                                <img src="{{ product.image.url }}" class="product-img-thumb">
+                            {% else %}
+                                <span class="status-badge badge-neutral">None</span>
+                            {% endif %}
+                        </td>
+                        <td style="font-weight: 600; color: #1a1a1a;">{{ product.name }}</td>
+                        <td><span class="status-badge badge-info">{{ product.category }}</span></td>
+                        <td>
+                            {% if product.status == 'Available' %}
+                                <span class="status-badge badge-success">Available</span>
+                            {% else %}
+                                <span class="status-badge badge-neutral">Unavailable</span>
+                            {% endif %}
+                        </td>
+                        <td style="font-weight: 600;">{{ product.price }}</td>
+                        <td>{{ product.stock }}</td>
+                        <td>
+                            <div class="action-group">
+                                <a href="?edit={{ product.id }}" class="admin-btn admin-btn-sm">Edit</a>
+                                <form method="POST" onsubmit="return confirm('Delete {{ product.name }} permanently?');">
                                     {% csrf_token %}
                                     <input type="hidden" name="delete_id" value="{{ product.id }}">
-                                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                    <button type="submit" class="admin-btn admin-btn-sm admin-btn-danger">Delete</button>
                                 </form>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="5" class="text-center py-4 text-muted">No inventory found. Use the form to add products.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 40px; color: #888;">No inventory found. Use the form to add products.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
 
 <script>
-    document.querySelectorAll('input, textarea, select').forEach(e => e.classList.add('form-control'));
-    document.querySelectorAll('input[type="file"]').forEach(e => e.classList.remove('form-control'));
+    // Apply custom styling to generated Django form fields
+    document.querySelectorAll('input:not([type="file"]):not([type="hidden"]):not([type="search"]):not([type="submit"]), textarea, select').forEach(e => {
+        e.classList.add('admin-input');
+        e.removeAttribute('class'); // Strip bootstrap if forms.py injects it
+        e.classList.add('admin-input');
+    });
 </script>
 {% endblock %}

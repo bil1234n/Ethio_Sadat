@@ -1,0 +1,92 @@
+{% load static %} 
+<header class="header-section">
+    <div class="container-fluid w-container">
+        <div class="header-block">
+            <a href="{% url 'home' %}" class="header-logo-link w-inline-block">
+                <img src="{% static 'img/ethio_sadat.png' %}" loading="lazy" alt="Farnic Logo" class="header-logo">
+            </a>
+            
+            <div data-animation="over-left" data-collapse="medium" data-duration="400" data-easing="ease" data-easing2="ease" role="banner" class="menu w-nav">
+                <nav role="navigation" class="header-menu w-nav-menu">
+                    <div class="offcanvas-header">
+                        <a href="#" class="mobile-logo-link w-inline-block">
+                            <img src="{% static 'img/ethio_sadat.png' %}" loading="lazy" alt="Farnic Logo" class="header-logo">
+                        </a>
+
+                        <!-- FIXED MOBILE SEARCH FORM -->
+                        <form action="{% url 'products' %}" method="GET" class="mobile-search w-form">
+                            <input class="header-search-input w-input" maxlength="256" name="search" placeholder="Search products..." type="search" id="search-mobile" required="">
+                            <input type="submit" class="header-search-button w-button" value="">
+                        </form>
+                        
+                    </div>
+                    
+                    <!-- ================= ADMIN MENU ================= -->
+                    {% if user.role == 'admin' or user.is_superuser %}
+                    
+                        <a href="{% url 'admin_dashboard' %}" class="header-menu-link w-nav-link">Dashboard</a>
+                        <a href="{% url 'admin_product_manage' %}" class="header-menu-link w-nav-link">Products</a>
+                        <a href="{% url 'manage_orders' %}" class="header-menu-link w-nav-link">Orders</a>
+                        <a href="{% url 'admin_feedback_list' %}" class="header-menu-link w-nav-link">Messages</a>
+
+                    <!-- ================= BUYER/GUEST MENU ================= -->
+                    {% else %}
+                    
+                        <div data-hover="false" data-delay="0" class="sub-menu w-dropdown">
+                            <div class="header-menu-link w-dropdown-toggle">
+                                <div>Products</div>
+                                <img src="https://cdn.prod.website-files.com/62d243bdaa648f8b5efa8fc1/62d39c68a73d9033159870d5_menu-dropdown-down-icon-.svg" loading="lazy" alt="Menu Dropdown Icon" class="menu-drop-down-icon">
+                            </div>
+                            
+                            <!-- DYNAMIC CATEGORY DROPDOWN -->
+                            <nav class="dropdown-list w-dropdown-list">
+                                <a href="{% url 'products' %}" class="dropdown-link w-dropdown-link">All Products</a>
+                                {% for cat in available_categories %}
+                                    <a href="{% url 'products' %}?category={{ cat }}" class="dropdown-link w-dropdown-link">{{ cat }}</a>
+                                {% endfor %}
+                            </nav>
+                            
+                        </div>
+                        
+                        <a href="{% url 'about' %}" class="header-menu-link w-nav-link">About </a>
+                        <a href="{% url 'socialMedia:index' %}" class="header-menu-link w-nav-link">Social-Media</a>
+                        <a href="{% url 'contact' %}" class="header-menu-link w-nav-link">Contact</a>
+                    
+                    {% endif %}
+                </nav>
+                
+                <div class="header-user-event-block">
+                    <!-- FIXED DESKTOP SEARCH FORM -->
+                    <form action="{% url 'products' %}" method="GET" class="header-search w-form">
+                        <input class="header-search-input w-input" maxlength="256" name="search" placeholder="Search products..." type="search" id="search-menu" required="">
+                        <input type="submit" class="header-search-button w-button" value="">
+                    </form>
+                    
+                    {% if user.is_authenticated %}
+                        <i class="fas fa-bell"></i>
+                        <a href="{% url 'profile' %}" class="none-s">
+                            <span class="nav-link text-light me-3"><strong>
+                            {{ user.username }}
+                            </strong></span>
+                        </a>
+                        <form method="POST" action="{% url 'logout' %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" style="background: none; border: none; cursor: pointer;">
+                                <i class="fas fa-sign-out-alt" style="color: #e34d4d; font-size: 18px;"></i>
+                            </button>
+                        </form>
+                    {% else %}
+                        <a class="btn btn-primary text-white ms-lg-3 px-4 fw-bold shadow-sm" href="{% url 'login' %}">Login</a>
+                    {% endif %}
+                    
+                    <div class="menu-button w-nav-button">
+                        <div class="menu-span menu-span-top"></div>
+                        <div class="menu-span menu-span-center"></div>
+                        <div class="menu-span menu-span-bottom"></div>
+                    </div>
+                </div>
+                <div class="w-nav-overlay" data-wf-ignore="" id="w-nav-overlay-0"></div>
+            </div>
+        </div>
+    </div>
+</header>

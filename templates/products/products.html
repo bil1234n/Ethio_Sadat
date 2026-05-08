@@ -1,34 +1,333 @@
-{% extends 'base.html' %}
+{% load static %}
+<!DOCTYPE html>
+<html data-wf-domain="farnic.webflow.io" data-wf-page="62e10b67939f96207c0204f0" data-wf-site="62d243bdaa648f8b5efa8fc1">
+<head>
+    <meta charset="utf-8">
+    <title>Shop - B2B Marketplace</title>
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    
+    <!-- Stylesheets -->
+    <link href="https://assets.website-files.com" rel="preconnect" crossorigin="anonymous">
+    <link href="{% static 'css/style.css' %}" rel="stylesheet" type="text/css">
+    
+    <!-- Fonts -->
+    <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        WebFont.load({ google: { families: ["Exo:100,200,300,400,500,600,700,800,900", "Jost:100,200,300,400,500,600,700,800,900", "Playfair Display:regular,500,600,700,800,900"] } });
+    </script>
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        .wf-force-outline-none[tabindex="-1"]:focus { outline: none; }
+        .product-image-cover { height: 260px; object-fit: cover; width: 100%; transition: transform 0.6s ease; }
+        .product-single-item:hover .product-image-cover { transform: scale(1.08); }
+        .no-image-placeholder { height: 260px; background-color: #f4f4f4; display: flex; align-items: center; justify-content: center; color: #888; font-weight: 500; width: 100%; }
+        
+        .admin-btn { background-color: #e34d4d; color: white; padding: 10px 24px; border-radius: 4px; font-weight: 600; text-decoration: none; display: inline-block; margin-top: 15px; transition: background 0.3s; }
+        .admin-btn:hover { background-color: #c93b3b; color: white; }
 
-{% block content %}
-<div class="d-flex justify-content-between align-items-center mt-4 mb-4">
-    <h2 class="fw-bold">B2B Marketplace</h2>
-    {% if user.is_staff %}
-        <a href="{% url 'admin_dashboard' %}" class="btn btn-danger shadow-sm">Enter Admin Portal</a>
-    {% endif %}
-</div>
+        /* Search Input Styling */
+        .toolbar-search-input {
+            width: 100%; height: 44px; padding: 10px 42px 10px 16px;
+            background-color: #ffffff; border: 1px solid #d1d5db; border-radius: 6px;
+            font-size: 15px; outline: none; transition: all 0.25s ease-in-out;
+        }
+        .toolbar-search-input:focus { border-color: #e34d4d; box-shadow: 0 0 0 3px rgba(227, 77, 77, 0.12); }
+        .toolbar-search-btn {
+            position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+            background: none; border: none; color: #9ca3af; font-size: 16px; cursor: pointer;
+        }
 
-<div class="row">
-    {% for product in products %}
-    <div class="col-md-4 col-lg-3 mb-4">
-        <div class="card h-100 shadow-sm border-0">
-            {% if product.image %}
-                <img src="{{ product.image.url }}" class="card-img-top" style="height: 200px; object-fit: cover;">
-            {% else %}
-                <div class="bg-secondary text-white d-flex align-items-center justify-content-center" style="height: 200px;">No Image</div>
-            {% endif %}
-            <div class="card-body">
-                <h5 class="card-title fw-bold text-truncate">{{ product.name }}</h5>
-                <h6 class="text-success fw-bold">{{ product.price }} ETB</h6>
-                <p class="text-muted small mb-3">Stock: {{ product.stock }} units</p>
-                <a href="{% url 'product_detail' product.pk %}" class="btn btn-outline-primary w-100 fw-bold">View Details</a>
+        /* Dropdown Overrides */
+        .custom-filter-dropdown { position: relative; display: inline-block; z-index: 100; }
+        .custom-filter-toggle {
+            display: flex; align-items: center; justify-content: space-between; gap: 12px;
+            background: #fff; border: 1px solid #d1d5db; border-radius: 6px; padding: 10px 18px;
+            font-size: 15px; font-weight: 600; color: #374151; cursor: pointer; min-width: 180px;
+        }
+        .custom-filter-list {
+            display: none; position: absolute; top: 100%; left: 0; z-index: 1100;
+            background: #ffffff; min-width: 210px; border-radius: 6px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); border: 1px solid #eef0f2;
+            padding: 0; margin: 0; list-style: none;
+        }
+        .custom-filter-dropdown:hover .custom-filter-list { display: block; }
+        .custom-filter-item a {
+            display: flex; align-items: center; gap: 10px; padding: 12px 18px; font-size: 14.5px;
+            color: #374151; text-decoration: none; border-bottom: 1px solid #f9fafb; transition: all 0.2s;
+        }
+        .custom-filter-item a:hover { background-color: #3d3d3d; color: #ffffff; }
+
+        /* AJAX Opacity transition */
+        #ajax-product-results { transition: opacity 0.3s ease-in-out; }
+    </style>
+</head>
+
+<body>
+    <div class="main-wrapper">
+        <!-- HEADER SECTION -->
+        {% include 'partials/header.html' %}
+
+        <!-- BREADCRUMB / MARKETPLACE HERO -->
+        <div class="breadcrumb-section">
+            <div class="container w-container">
+                <div class="breadcrumb-block">
+                    <div class="breadcrumb-block-left">
+                        <div class="breadcrumb-content-block">
+                            <h1 class="breadcrumb-title">B2B Marketplace</h1>
+                            <div class="breadcrumb-text">Browse our complete collection of premium Arabic Mejlis, Sofas, Beds, and custom furniture tailored for your space.</div>
+                            
+                            {% if user.is_staff %}
+                                <a href="{% url 'admin_dashboard' %}" class="admin-btn shadow-sm">Enter Admin Portal</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="breadcrumb-block-right">
+                        <div class="breadcrumb-image-block">
+                            <img src="https://cdn.prod.website-files.com/62d243bdaa648f8b5efa8fc1/62e0bd1e0f555f392e090236_breadcrumb-image-1.png" loading="lazy" alt="Breadcrumb Image">
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
+
+        <!-- PRODUCT SECTION -->
+        <div class="product-section">
+            <div class="section-gap-120">
+                <div class="container w-container">
+                    <div class="product-page-block">
+                        
+                        <!-- ============================================== -->
+                        <!-- 1. TOP CONTROLS (Dropdown + Search)            -->
+                        <!-- ============================================== -->
+                        <div class="product-catagory-sort" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; margin-bottom: 15px;">
+                            
+                            <!-- CATEGORY DROPDOWN -->
+                            <div style="display: flex; align-items: center; gap: 12px; z-index: 100;">
+                                <div style="font-weight: 600; color: #4b5563;">Filter by Category:</div>
+                                <div class="custom-filter-dropdown">
+                                    <div class="custom-filter-toggle">
+                                        <span style="color: #e34d4d; font-weight: 700;">{{ current_category }}</span>
+                                        <i class="fas fa-chevron-down" style="font-size: 11px; color: #9ca3af;"></i>
+                                    </div>
+                                    <ul class="custom-filter-list">
+                                        <li class="custom-filter-item">
+                                            <a href="?{% if search_query %}search={{ search_query }}{% endif %}">
+                                                <i class="fas fa-layer-group" style="color: #6b7280; opacity: 0.7;"></i>
+                                                <span style="{% if current_category == 'All' %}color: #e34d4d; font-weight: 700;{% endif %}">All Categories</span>
+                                            </a>
+                                        </li>
+                                        {% for cat in available_categories %}
+                                        <li class="custom-filter-item">
+                                            <a href="?category={{ cat }}{% if search_query %}&search={{ search_query }}{% endif %}">
+                                                <i class="fas fa-check" style="color: #e34d4d; opacity: {% if current_category == cat %}1{% else %}0{% endif %};"></i>
+                                                <span style="{% if current_category == cat %}color: #e34d4d; font-weight: 700;{% endif %}">{{ cat }}</span>
+                                            </a>
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- LIVE SEARCH BOX -->
+                            <form method="GET" action="." class="toolbar-search-form" style="position: relative; flex-grow: 1; max-width: 400px; z-index: 100;"" id="live-search-form">
+                                {% if current_category != 'All' %}
+                                    <input type="hidden" name="category" value="{{ current_category }}">
+                                {% endif %}
+                                <input type="text" id="live-search-input" name="search" value="{{ search_query }}" placeholder="Search products by name..." class="toolbar-search-input" autocomplete="off">
+                                <button type="submit" class="toolbar-search-btn" aria-label="Search">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- ============================================== -->
+                        <!-- 2. WEBFLOW TABS WRAPPER                        -->
+                        <!-- ============================================== -->
+                        <div data-current="Tab 1" data-easing="ease" data-duration-in="300" data-duration-out="100" class="product-sort-tabs w-tabs">
+                            
+                            <!-- TAB MENU ICONS (Grid/List) -->
+                            <!-- (Must remain direct child of w-tabs to be clickable) -->
+                            <div class="product-sort-tabs-menu w-tab-menu" role="tablist" style="display: flex; gap: 8px; margin-bottom: 25px;">
+                                <a data-w-tab="Tab 1" class="tab-link-tab-1-2 w-inline-block w-tab-link w--current" role="tab" style="padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; background: #fff; display: flex; align-items: center; justify-content: center; width: 45px; height: 45px;">
+                                    <img alt="Grid View Icon" loading="lazy" src="https://cdn.prod.website-files.com/62d243bdaa648f8b5efa8fc1/62e0c4168c1c3aca3d0fa074_sort-icon-grid.svg" class="sort-icon" style="width: 20px;">
+                                </a>
+                                <a data-w-tab="Tab 2" class="tab-link-tab-2-2 w-inline-block w-tab-link" role="tab" style="padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; background: #fff; display: flex; align-items: center; justify-content: center; width: 45px; height: 45px;">
+                                    <img alt="List View Icon" loading="lazy" src="https://cdn.prod.website-files.com/62d243bdaa648f8b5efa8fc1/62e0c446abb5c839e28a1452_sort-icon-list.svg" class="sort-icon" style="width: 20px;">
+                                </a>
+                            </div>
+
+                            <!-- TAB CONTENT (AJAX TARGET) -->
+                            <!-- (Must remain direct child of w-tabs to show panels correctly) -->
+                            <div class="w-tab-content" id="ajax-product-results">
+                                
+                                <!-- ============================== -->
+                                <!-- TAB 1: GRID VIEW PANELS        -->
+                                <!-- ============================== -->
+                                <div data-w-tab="Tab 1" class="w-tab-pane w--tab-active" role="tabpanel">
+                                    <div class="product-block">
+                                        <div class="product-collection-list-wrapper w-dyn-list">
+                                            <div role="list" class="product-list w-dyn-items">
+                                                
+                                                {% for product in products %}
+                                                <div role="listitem" class="product-item w-dyn-item">
+                                                    <div class="product-single-item" style="border: 1px solid #eee; border-radius: 8px; overflow: hidden;">
+                                                        
+                                                        <div class="product-top-block" style="position: relative; overflow: hidden;">
+                                                            <a href="{% url 'product_detail' product.pk %}" class="product-image-link-block w-inline-block">
+                                                                {% if product.image %}
+                                                                    <img alt="{{ product.name }}" loading="lazy" src="{{ product.image.url }}" class="product-image-cover">
+                                                                {% else %}
+                                                                    <div class="no-image-placeholder">No Image</div>
+                                                                {% endif %}
+                                                            </a>
+                                                        </div>
+                                                        
+                                                        <div class="product-bottom-block" style="padding: 15px;">
+                                                            <div class="product-content">
+                                                                <a href="{% url 'product_detail' product.pk %}" class="product-single-link text-truncate" title="{{ product.name }}" style="font-size: 18px; font-weight: bold; text-decoration: none; color: #333;">
+                                                                    {{ product.name }}
+                                                                </a>
+                                                                <div class="product-stock" style="font-size: 13px; color: #666; margin-top: 5px;">
+                                                                    <i class="fas fa-circle" style="color: #28a745; font-size: 8px;"></i> {{ product.stock }} In Stock
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            <div class="product-price-wrapper" style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #eee; padding-top: 10px;">
+                                                                <div class="product-price" style="color: #e34d4d; font-weight: bold;">{{ product.price }} ETB</div>
+                                                                <a href="{% url 'product_detail' product.pk %}" class="btn btn-sm" style="background: #23ba3c; color: white; padding: 5px 12px; border-radius: 4px; text-decoration: none;"><i class="fas fa-eye"></i>&nbsp; View</a>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                    </div>
+                                                </div>
+                                                {% empty %}
+                                                <div class="col-12 text-center mt-5" style="grid-column: 1 / -1; padding: 60px 0; background: #fafafa; border-radius: 8px; width: 100%;">
+                                                    <i class="fas fa-box-open mb-3" style="font-size: 40px; color: #ccc;"></i>
+                                                    <h4 class="text-muted mt-2" style="font-family: 'Jost', sans-serif;">No products matched your search.</h4>
+                                                </div>
+                                                {% endfor %}
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- ============================== -->
+                                <!-- TAB 2: LIST VIEW PANELS        -->
+                                <!-- ============================== -->
+                                <div data-w-tab="Tab 2" class="w-tab-pane" role="tabpanel">
+                                    <div class="product-block">
+                                        <div class="product-3-collection-list-wrapper w-dyn-list">
+                                            <div role="list" class="product-3-list w-dyn-items">
+                                                
+                                                {% for product in products %}
+                                                <div role="listitem" class="product-3-item w-dyn-item">
+                                                    <div class="product-list-single-item">
+                                                        <div class="product-3-top-block">
+                                                            <a href="{% url 'product_detail' product.pk %}" class="product-image-link-block w-inline-block">
+                                                                {% if product.image %}
+                                                                    <img alt="{{ product.name }}" loading="lazy" src="{{ product.image.url }}" class="product-image product-image-cover">
+                                                                {% else %}
+                                                                    <div class="no-image-placeholder">No Image Available</div>
+                                                                {% endif %}
+                                                            </a>
+                                                        </div>
+                                                        <div class="product-3-bottom-block">
+                                                            <div class="product-3-content">
+                                                                <a href="{% url 'product_detail' product.pk %}" class="product-single-link">{{ product.name }}</a>
+                                                                <p class="product-short-discription">Available Stock: <strong style="color:#333;">{{ product.stock }} units</strong>.</p>
+                                                                <div class="product-price">
+                                                                    <div class="product-price">{{ product.price }} ETB</div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="product-3-inner-cart">
+                                                                <div class="add-to-cart">
+                                                                    <a href="{% url 'product_detail' product.pk %}" class="w-commerce-commerceaddtocartbutton product-add-to-cart-button" style="text-decoration: none; text-align: center; width:100%;"> View Details</a>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {% empty %}
+                                                <div class="col-12 text-center mt-5" style="width: 100%; padding: 60px 0; background: #fafafa; border-radius: 8px;">
+                                                    <h4 class="text-muted">No products matched your search.</h4>
+                                                </div>
+                                                {% endfor %}
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FOOTER SECTION -->
+        {% include 'partials/footer.html' %}
     </div>
-    {% empty %}
-    <div class="col-12 text-center text-muted mt-5">
-        <h4>No products available in the market yet.</h4>
-    </div>
-    {% endfor %}
-</div>
-{% endblock %}
+    
+    <!-- Scripts -->
+    <script src="https://d3e54v103j8qbb.cloudfront.net/js/jquery-3.5.1.min.dc5e7f18c8.js" crossorigin="anonymous"></script>
+    <script src="https://assets.website-files.com/62d243bdaa648f8b5efa8fc1/js/webflow.3d5a299de.js" type="text/javascript"></script>
+
+    <!-- ACTIVE LIVE SEARCH JAVASCRIPT -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const searchInput = document.getElementById('live-search-input');
+            const searchForm = document.getElementById('live-search-form');
+            const resultsContainer = document.getElementById('ajax-product-results');
+            let debounceTimer;
+
+            if(searchInput && resultsContainer) {
+                
+                searchForm.addEventListener('submit', function(e) {
+                    e.preventDefault(); 
+                });
+
+                searchInput.addEventListener('input', function() {
+                    clearTimeout(debounceTimer);
+                    
+                    debounceTimer = setTimeout(() => {
+                        resultsContainer.style.opacity = '0.3';
+                        resultsContainer.style.pointerEvents = 'none';
+
+                        const url = new URL(window.location.href);
+                        url.searchParams.set('search', searchInput.value);
+
+                        fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                        .then(response => response.text())
+                        .then(html => {
+                            const parser = new DOMParser();
+                            const doc = parser.parseFromString(html, 'text/html');
+                            
+                            // Replaces ONLY the contents of the w-tab-content div, keeping the wrapper intact.
+                            resultsContainer.innerHTML = doc.getElementById('ajax-product-results').innerHTML;
+                            
+                            window.history.pushState({}, '', url);
+
+                            // IMPORTANT: Forces Webflow to re-check the DOM and re-activate the tabs.
+                            if (window.Webflow && window.Webflow.require('tabs')) {
+                                window.Webflow.require('tabs').init();
+                            }
+                        })
+                        .catch(err => console.error('Live search error:', err))
+                        .finally(() => {
+                            resultsContainer.style.opacity = '1';
+                            resultsContainer.style.pointerEvents = 'auto';
+                        });
+
+                    }, 400); 
+                });
+            }
+        });
+    </script>
+</body>
+</html>
