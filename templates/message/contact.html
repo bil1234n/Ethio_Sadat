@@ -129,12 +129,23 @@
                                 </div>
 
                                 <div class="submit-button" style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap;">
-                                    <button type="submit" class="button-black-large w-button">Submit Message</button>
                                     
-                                    <!-- History Link -->
-                                    <a href="{% url 'my_feedback' %}" class="btn-new-message">
-                                        My Messages &rarr;
-                                    </a>
+                                    {% if user.is_authenticated %}
+                                        <!-- User is logged in: Show normal submit button -->
+                                        <button type="submit" class="button-black-large w-button">Submit Message</button>
+                                        
+                                        <!-- History Link -->
+                                        <a href="{% url 'my_feedback' %}" class="btn-new-message">
+                                            My Messages &rarr;
+                                        </a>
+                                    {% else %}
+                                        <!-- User is NOT logged in: Show a button redirecting them to login -->
+                                        <a href="{% url 'login' %}?next={% url 'contact' %}" class="button-black-large w-button" style="text-decoration: none; text-align: center;">
+                                            <i class="fa-solid fa-lock" style="margin-right: 5px;"></i> Log in to Submit
+                                        </a>
+                                        <span style="font-size: 13px; color: #888;">You must have an account to send a message.</span>
+                                    {% endif %}
+                                    
                                 </div>
                             </form>
 

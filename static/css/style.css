@@ -5417,7 +5417,7 @@ figure {
   -webkit-order: 1;
   -ms-flex-order: 1;
   order: 1;
-  grid-column-gap: 30px;
+  grid-column-gap: 5px;
   grid-row-gap: 30px;
 }
 
@@ -8459,6 +8459,8 @@ figure {
   display: grid;
   grid-auto-columns: 1fr;
   grid-column-gap: 65px;
+  justify-content: center;
+  align-items: center;
   grid-row-gap: 65px;
   -ms-grid-columns: 1.25fr 1fr;
   grid-template-columns: 1.25fr 1fr;
@@ -8794,6 +8796,10 @@ figure {
   -ms-grid-rows: auto auto;
   grid-template-rows: auto auto;
   width: 100%;
+}
+.w-editor-messages,
+.w-editor-bem-EditorApp_Main{
+  display: none !important;
 }
 
 /* ==========================================

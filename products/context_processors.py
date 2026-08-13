@@ -1,8 +1,14 @@
 from .models import Product
 
 def global_categories(request):
-    # This runs on EVERY page load, injecting categories into all templates (like header.html)
-    categories = Product.objects.exclude(category__isnull=True).exclude(category__exact='').values_list('category', flat=True).distinct()
+    # Added .filter(status='Available') and .order_by('category') to fix duplicates
+    categories = Product.objects.filter(status='Available') \
+        .exclude(category__isnull=True) \
+        .exclude(category__exact='') \
+        .order_by('category') \
+        .values_list('category', flat=True) \
+        .distinct()
+        
     return {
         'available_categories': categories
     }

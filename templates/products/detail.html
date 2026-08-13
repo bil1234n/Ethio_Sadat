@@ -35,11 +35,7 @@
             overflow: hidden;
             border: 1px solid #eaeaea;
             box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-        }
-        .media-display-frame img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
+            flex-direction: column;
         }
 
         /* Utility Display Classes */
@@ -123,7 +119,6 @@
             color: #1e1c1c;
             text-decoration: none;
             display: flex;
-            /* gap: 1rem; */
             align-items: center;
             margin-right: 1rem;
             transition: all 0.2s ease;
@@ -142,8 +137,80 @@
         }
       
         .button-black-medium,
-        .button-black-large{
-            color: #fff;
+        .button-black-large { color: #fff; }
+
+        .telegram-button{
+            text-decoration: none; 
+            background-color: #2AABEE; 
+            color: #fff; border: none; 
+            display: inline-flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 10px; 
+            padding: 15px 30px; 
+            font-weight: 600; 
+            border: 2px solid #2AABEE;
+            border-radius: 8px; 
+            transition: background 0.3s, color 0.3s;
+            width: 100%;
+        }
+        .telegram-button:hover{
+            background-color: transparent;
+            color: #2AABEE;
+        }
+
+        /* --- NEW GALLERY STYLES --- */
+        .gallery-thumb {
+            height: 60px; width: 60px; 
+            object-fit: cover; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            border: 2px solid transparent; 
+            opacity: 0.6; 
+            transition: all 0.3s ease; 
+            flex-shrink: 0;
+        }
+        .gallery-thumb:hover { opacity: 1; }
+        .gallery-thumb.active-thumb {
+            border-color: #1e1c1c;
+            opacity: 1;
+        }
+        
+        /* Custom scrollbar for thumbnails */
+        .thumb-scroll-container::-webkit-scrollbar { height: 6px; }
+        .thumb-scroll-container::-webkit-scrollbar-thumb { background: #d0d0d0; border-radius: 10px; }
+
+        /* Wishlist Toggle Button Styles */
+        .wishlist-toggle-btn {
+            position: absolute;
+            right: 6%;
+            background: rgba(255, 255, 255, 0.9);
+            margin-left: 2rem;
+            border: none;
+            border-radius: 50%;
+            width: 38px;
+            height: 38px;
+            cursor: pointer;
+            color: #9ca3af;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            z-index: 10;          
+            display: flex;             
+            align-items: center;       
+            justify-content: center;
+        }
+        .wishlist-toggle-btn:hover {
+            transform: scale(1.1);
+            color: #e34d4d;
+        }
+        .wishlist-toggle-btn.active {
+            color: #e34d4d;
+        }
+        .top-detail-s{
+            position: relative;
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
         }
     </style>
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
@@ -154,40 +221,38 @@
         <!-- HEADER SECTION -->
         {% include 'partials/header.html' %}
 
-                <!-- MINIMALIST BREADCRUMB & BACK BUTTON -->
-                <div class="breadcrumb-section">
-                    <div class="container w-container">
-                        <h2>Product Detail</h2>
-                        <div class="product-top-bar">
-                            <!-- Left: Breadcrumb Path -->
-                            <div class="premium-breadcrumb">
-                                <a href="{% url 'home' %}" class="premium-breadcrumb-link">Home</a> 
-                                <span class="breadcrumb-separator">/</span> 
-                                <a href="{% url 'products' %}" class="premium-breadcrumb-link">Marketplace</a>
-                                <span class="breadcrumb-separator">/</span> 
-                                <span class="breadcrumb-current">{{ product.name }}</span>
-                            </div>
+        <!-- MINIMALIST BREADCRUMB & BACK BUTTON -->
+        <div class="breadcrumb-section">
+            <div class="container w-container">
+                <h2>Product Detail</h2>
+                <div class="product-top-bar">
+                    <!-- Left: Breadcrumb Path -->
+                    <div class="premium-breadcrumb">
+                        <a href="{% url 'home' %}" class="premium-breadcrumb-link">Home</a> 
+                        <span class="breadcrumb-separator">/</span> 
+                        <a href="{% url 'products' %}" class="premium-breadcrumb-link">Marketplace</a>
+                        <span class="breadcrumb-separator">/</span> 
+                        <span class="breadcrumb-current">{{ product.name }}</span>
+                    </div>
 
-                            <!-- Right: Actions -->
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                {% if user.is_staff %}
-                                    <a href="{% url 'admin_dashboard' %}" class="minimal-action-btn" style="color: #e34d4d;">
-                                        <i class="fa-solid fa-shield-halved"></i> Admin Portal
-                                    </a>
-                                {% endif %}
-                                <a href="{% url 'products' %}" class="minimal-action-btn">
-                                    <i class="fa-solid fa-arrow-left"></i> &nbsp; Back to Shop
-                                </a>
-                            </div>
-                        </div>
+                    <!-- Right: Actions -->
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        {% if user.is_staff %}
+                            <a href="{% url 'admin_dashboard' %}" class="minimal-action-btn" style="color: #e34d4d;">
+                                <i class="fa-solid fa-shield-halved"></i> Admin Portal
+                            </a>
+                        {% endif %}
+                        <a href="{% url 'products' %}" class="minimal-action-btn">
+                            <i class="fa-solid fa-arrow-left"></i> &nbsp; Back to Shop
+                        </a>
                     </div>
                 </div>
+            </div>
+        </div>
 
         <!-- PRODUCT DETAIL SECTION -->
         <div style="padding-top: 40px; padding-bottom: 120px;">
             <div class="container w-container">
-                
-
                 <!-- MAIN PRODUCT GRID -->
                 <div class="w-layout-grid product-details-grid">
                     
@@ -196,15 +261,37 @@
                         <!-- Display Box -->
                         <div id="productMediaContent" class="media-display-frame">
                             
-                            <!-- Static Image View -->
-                            <div id="photo-view" class="d-flex" style="width:100%; height:100%;">
-                                {% if product.image %}
-                                    <img src="{{ product.image.url }}" alt="{{ product.name }}">
-                                {% else %}
-                                    <div style="display:flex; align-items:center; justify-content:center; width:100%; color:#898989;">
-                                        <span>📸 No Image Available</span>
-                                    </div>
+                            <!-- Static Image View with Gallery -->
+                            <div id="photo-view" class="d-flex" style="width:100%; height:100%; flex-direction: column;">
+                                
+                                <!-- Main Large Display -->
+                                <div style="flex: 1; width: 100%; display: flex; align-items: center; justify-content: center; padding: 20px; overflow: hidden;">
+                                    {% if product.image %}
+                                        <img id="main-gallery-img" src="{{ product.image.url }}" alt="{{ product.name }}" style="max-height: 100%; width: 100%; object-fit: contain; transition: opacity 0.2s ease;">
+                                    {% else %}
+                                        <div style="color:#898989; display: flex; align-items: center; justify-content: center; height: 100%;">
+                                            <span>📸 No Image Available</span>
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Thumbnails for multiple images -->
+                                {% if product.images.all %}
+                                <div class="thumb-scroll-container" style="height: 90px; width: 100%; background: #fff; border-top: 1px solid #eaeaea; display: flex; gap: 12px; padding: 15px; overflow-x: auto; align-items: center; justify-content: center;">
+                                    
+                                    <!-- Main Image Thumbnail -->
+                                    {% if product.image %}
+                                        <img src="{{ product.image.url }}" onclick="changeMainImage(this)" class="gallery-thumb active-thumb">
+                                    {% endif %}
+                                    
+                                    <!-- Additional Images Thumbnails -->
+                                    {% for extra_img in product.images.all %}
+                                        <img src="{{ extra_img.image.url }}" onclick="changeMainImage(this)" class="gallery-thumb">
+                                    {% endfor %}
+                                    
+                                </div>
                                 {% endif %}
+
                             </div>
 
                             <!-- 3D Viewer -->
@@ -247,11 +334,17 @@
 
                     <!-- Right Column: Product Details (1fr) -->
                     <div>
-                        <div style="display:flex; gap:10px; margin-bottom:15px;">
-                            <span class="badge badge-dark">B2B Product</span>
-                            {% if product.ar_model %}
-                                <span class="badge badge-green">✨ AR Ready</span>
-                            {% endif %}
+                        <div class="top-detail-s">
+                            <div style="display:flex; gap:10px;">
+                                <span class="badge badge-dark">B2B Product</span>
+                                {% if product.ar_model %}
+                                    <span class="badge badge-green">✨ AR Ready</span>
+                                {% endif %}
+                            </div>
+                        
+                            <button class="wishlist-toggle-btn {% if product.id in wishlist_product_ids %}active{% endif %}" data-id="{{ product.id }}" data-url="{% url 'toggle_wishlist' product.id %}" title="Toggle Wishlist">
+                                <i class="fa-heart {% if product.id in wishlist_product_ids %}fa-solid{% else %}fa-regular{% endif %}"></i>
+                            </button>
                         </div>
                         
                         <h1 class="product-details-title" style="margin-bottom:10px;">{{ product.name }}</h1>
@@ -270,20 +363,12 @@
                             </div>
                         </div>
 
-                        <!-- Pay / Checkout Form -->
-                        <form action="{% url 'checkout' product.id %}" method="POST">
-                            {% csrf_token %}
-                            <div style="display:flex; gap:15px; align-items:center; margin-bottom:20px;">
-                                <label for="qty" style="font-weight:600; color:#1e1c1c; margin-bottom:0;">Qty:</label>
-                                <input type="number" id="qty" name="quantity" value="1" min="1" max="{{ product.stock }}" 
-                                       class="w-input" style="width:80px; margin-bottom:0; text-align:center; border-radius:4px;">
-                            </div>
-                            
-                            <button type="submit" class="button-black-large" style="width:100%; display:flex; align-items:center; justify-content:center; gap:10px; text-decoration:none;" {% if product.stock == 0 %}disabled{% endif %}>
-                                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                                {% if product.stock > 0 %}Pay via Chapa{% else %}Out of Stock{% endif %}
-                            </button>
-                        </form>
+                        <div style="display: flex; flex-direction: column; gap: 15px; align-items: center; margin-top: 30px; width: 100%;">
+                            <!-- Professional Telegram Order Button -->
+                            <a href="#" onclick="orderViaTelegram(event)" class="telegram-button" style="flex: 1;">
+                                <i class="fa-brands fa-telegram" style="font-size: 22px;"></i> Order via Telegram
+                            </a>
+                        </div>
                     </div>
                     
                 </div>
@@ -319,7 +404,7 @@
             </div>
         </div>
 
-        <!-- 3. Auto-AR Fullscreen Overlay (For when users scan the QR code) -->
+        <!-- 3. Auto-AR Fullscreen Overlay -->
         <div id="auto-ar-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:99999; flex-direction:column; justify-content:center; align-items:center; color:#fff; cursor:pointer;" onclick="triggerAutoAR()">
             <div style="animation: bounce 2s infinite; margin-bottom:20px;">
                 <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
@@ -330,12 +415,30 @@
 
         <!-- Scripts -->
         <script>
+            // --- 0. Gallery Thumbnail Swap Logic ---
+            function changeMainImage(clickedThumb) {
+                const mainImg = document.getElementById('main-gallery-img');
+                
+                // Smooth fade transition
+                mainImg.style.opacity = 0;
+                setTimeout(() => {
+                    mainImg.src = clickedThumb.src;
+                    mainImg.style.opacity = 1;
+                }, 150);
+
+                // Update border highlighting on thumbnails
+                document.querySelectorAll('.gallery-thumb').forEach(thumb => {
+                    thumb.classList.remove('active-thumb');
+                });
+                clickedThumb.classList.add('active-thumb');
+            }
+
             // Modal Controls
             function closeModal(modalId) {
                 document.getElementById(modalId).classList.remove('show');
             }
 
-            // --- 1. Gallery Logic (Photo vs 3D) ---
+            // --- 1. View Toggling (Photo vs 3D) ---
             function switchView(mode) {
                 const photoView = document.getElementById('photo-view');
                 const view3d = document.getElementById('3d-view');
@@ -378,9 +481,7 @@
 
             function handleARClick() {
                 if (!viewer) return;
-                
                 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
                 if (isMobile) {
                     if (viewer.canActivateAR) {
                         viewer.activateAR();
@@ -390,7 +491,6 @@
                 } else {
                     const currentUrl = new URL(window.location.href);
                     currentUrl.searchParams.set('auto_ar', 'true');
-                    
                     const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(currentUrl.toString())}&margin=10`;
                     document.getElementById('qr-image').src = qrUrl;
                     document.getElementById('qrModal').classList.add('show');
@@ -400,7 +500,6 @@
             // --- 3. QR Code Scan Auto-Trigger Logic ---
             window.onload = function() {
                 const urlParams = new URLSearchParams(window.location.search);
-                
                 if (urlParams.get('auto_ar') === 'true') {
                     switchView('3d');
                     const overlay = document.getElementById('auto-ar-overlay');
@@ -411,7 +510,6 @@
             function triggerAutoAR() {
                 const overlay = document.getElementById('auto-ar-overlay');
                 overlay.style.display = 'none';
-                
                 if (viewer && viewer.canActivateAR) {
                     viewer.activateAR();
                 } else {
@@ -426,7 +524,84 @@
                     }
                 });
             }
+
+            // --- 4. Telegram Order Logic ---
+            function orderViaTelegram(e) {
+                e.preventDefault();
+                
+                const telegramUsername = "Ahamuti"; 
+                const productName = "{{ product.name|escapejs }}";
+                const productPrice = "{{ product.price }}";
+                const productUrl = window.location.href; 
+                
+                let imageUrl = "";
+                {% if product.image %}
+                    imageUrl = "{{ product.image.url }}";
+                    if (!imageUrl.startsWith('http')) {
+                        imageUrl = window.location.origin + imageUrl;
+                    }
+                {% endif %}
+
+                let message = `Hello! 👋 I would like to place an order.%0A%0A`;
+                message += `📦 *Product:* ${productName}%0A`;
+                message += `💰 *Price:* ${productPrice} ETB%0A%0A`;
+                
+                if (imageUrl) {
+                    message += `🖼️ *Cover Image:* ${imageUrl}%0A`;
+                }
+                
+                message += `🔗 *Product Link:* ${productUrl}%0A%0A`;
+                message += `Please let me know the next steps!`;
+
+                const telegramApiUrl = `https://t.me/${telegramUsername}?text=${message}`;
+                window.open(telegramApiUrl, '_blank');
+            }
+       
+            // <!-- WISHLIST AJAX TOGGLE -->
+            document.addEventListener('click', function(e) {
+                const btn = e.target.closest('.wishlist-toggle-btn');
+                
+                if(btn) {
+                    e.preventDefault();
+                    
+                    // Grab the precise Django URL from the button
+                    const url = btn.getAttribute('data-url'); 
+                    const icon = btn.querySelector('i');
+                    
+                    // Visual pop animation immediately
+                    btn.style.transform = 'scale(0.8)';
+                    setTimeout(() => btn.style.transform = '', 150);
+
+                    // Fetch using the dynamic Django URL
+                    fetch(url, {
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    })
+                    .then(res => {
+                        if(res.status === 401) {
+                            window.location.href = '/login/'; // Redirect if not logged in
+                            return null;
+                        }
+                        if(!res.ok) throw new Error('Network response was not ok');
+                        return res.json();
+                    })
+                    .then(data => {
+                        if(data) {
+                            if(data.status === 'added') {
+                                btn.classList.add('active');
+                                icon.classList.remove('fa-regular');
+                                icon.classList.add('fa-solid');
+                            } else if(data.status === 'removed') {
+                                btn.classList.remove('active');
+                                icon.classList.remove('fa-solid');
+                                icon.classList.add('fa-regular');
+                            }
+                        }
+                    })
+                    .catch(err => console.error('Wishlist toggle error:', err));
+                }
+            });
         </script>
+
 
         <!-- FOOTER SECTION -->
         {% include 'partials/footer.html' %}

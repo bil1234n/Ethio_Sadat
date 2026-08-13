@@ -62,6 +62,33 @@
 
         /* AJAX Opacity transition */
         #ajax-product-results { transition: opacity 0.3s ease-in-out; }
+
+        /* Wishlist Toggle Button Styles */
+        .wishlist-toggle-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50%;
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            color: #9ca3af;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        .wishlist-toggle-btn:hover {
+            transform: scale(1.1);
+            color: #e34d4d;
+        }
+        .wishlist-toggle-btn.active {
+            color: #e34d4d;
+        }
     </style>
 </head>
 
@@ -78,6 +105,7 @@
                         <div class="breadcrumb-content-block">
                             <h1 class="breadcrumb-title">B2B Marketplace</h1>
                             <div class="breadcrumb-text">Browse our complete collection of premium Arabic Mejlis, Sofas, Beds, and custom furniture tailored for your space.</div>
+                            <a href="{% url 'wishlist' %}" class="button-black-large w-button" style="margin-top: 15px;">My Favorite</a>
                             
                             {% if user.is_staff %}
                                 <a href="{% url 'admin_dashboard' %}" class="admin-btn shadow-sm">Enter Admin Portal</a>
@@ -132,7 +160,7 @@
                             </div>
 
                             <!-- LIVE SEARCH BOX -->
-                            <form method="GET" action="." class="toolbar-search-form" style="position: relative; flex-grow: 1; max-width: 400px; z-index: 100;"" id="live-search-form">
+                            <form method="GET" action="." class="toolbar-search-form" style="position: relative; flex-grow: 1; max-width: 400px; z-index: 100;" id="live-search-form">
                                 {% if current_category != 'All' %}
                                     <input type="hidden" name="category" value="{{ current_category }}">
                                 {% endif %}
@@ -149,7 +177,6 @@
                         <div data-current="Tab 1" data-easing="ease" data-duration-in="300" data-duration-out="100" class="product-sort-tabs w-tabs">
                             
                             <!-- TAB MENU ICONS (Grid/List) -->
-                            <!-- (Must remain direct child of w-tabs to be clickable) -->
                             <div class="product-sort-tabs-menu w-tab-menu" role="tablist" style="display: flex; gap: 8px; margin-bottom: 25px;">
                                 <a data-w-tab="Tab 1" class="tab-link-tab-1-2 w-inline-block w-tab-link w--current" role="tab" style="padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; background: #fff; display: flex; align-items: center; justify-content: center; width: 45px; height: 45px;">
                                     <img alt="Grid View Icon" loading="lazy" src="https://cdn.prod.website-files.com/62d243bdaa648f8b5efa8fc1/62e0c4168c1c3aca3d0fa074_sort-icon-grid.svg" class="sort-icon" style="width: 20px;">
@@ -160,7 +187,6 @@
                             </div>
 
                             <!-- TAB CONTENT (AJAX TARGET) -->
-                            <!-- (Must remain direct child of w-tabs to show panels correctly) -->
                             <div class="w-tab-content" id="ajax-product-results">
                                 
                                 <!-- ============================== -->
@@ -176,6 +202,15 @@
                                                     <div class="product-single-item" style="border: 1px solid #eee; border-radius: 8px; overflow: hidden;">
                                                         
                                                         <div class="product-top-block" style="position: relative; overflow: hidden;">
+                                                            
+                                                            <!-- WISHLIST BUTTON FOR GRID VIEW -->
+                                                            <button class="wishlist-toggle-btn {% if product.id in wishlist_product_ids %}active{% endif %}" 
+                                                                    data-id="{{ product.id }}" 
+                                                                    data-url="{% url 'toggle_wishlist' product.id %}" 
+                                                                    title="Toggle Wishlist">
+                                                                <i class="fa-heart {% if product.id in wishlist_product_ids %}fa-solid{% else %}fa-regular{% endif %}"></i>
+                                                            </button>
+
                                                             <a href="{% url 'product_detail' product.pk %}" class="product-image-link-block w-inline-block">
                                                                 {% if product.image %}
                                                                     <img alt="{{ product.name }}" loading="lazy" src="{{ product.image.url }}" class="product-image-cover">
@@ -226,7 +261,16 @@
                                                 {% for product in products %}
                                                 <div role="listitem" class="product-3-item w-dyn-item">
                                                     <div class="product-list-single-item">
-                                                        <div class="product-3-top-block">
+                                                        <div class="product-3-top-block" style="position: relative;">
+                                                            
+                                                            <!-- WISHLIST BUTTON FOR LIST VIEW -->
+                                                            <button class="wishlist-toggle-btn {% if product.id in wishlist_product_ids %}active{% endif %}" 
+                                                                    data-id="{{ product.id }}" 
+                                                                    data-url="{% url 'toggle_wishlist' product.id %}" 
+                                                                    title="Toggle Wishlist">
+                                                                <i class="fa-heart {% if product.id in wishlist_product_ids %}fa-solid{% else %}fa-regular{% endif %}"></i>
+                                                            </button>
+
                                                             <a href="{% url 'product_detail' product.pk %}" class="product-image-link-block w-inline-block">
                                                                 {% if product.image %}
                                                                     <img alt="{{ product.name }}" loading="lazy" src="{{ product.image.url }}" class="product-image product-image-cover">
@@ -326,6 +370,51 @@
 
                     }, 400); 
                 });
+            }
+        });
+
+        // <!-- WISHLIST AJAX TOGGLE -->
+        document.addEventListener('click', function(e) {
+            // Find closest wishlist button
+            const btn = e.target.closest('.wishlist-toggle-btn');
+            
+            if(btn) {
+                e.preventDefault();
+                e.stopPropagation(); // <-- THIS IS THE CRITICAL FIX. It stops the click from hitting the <a> tag underneath it.
+                
+                // Get the accurate URL generated by Django
+                const url = btn.getAttribute('data-url');
+                const icon = btn.querySelector('i');
+                
+                // Visual pop animation immediately
+                btn.style.transform = 'scale(0.8)';
+                setTimeout(() => btn.style.transform = '', 150);
+
+                fetch(url, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(res => {
+                    if(res.status === 401) {
+                        window.location.href = '/login/'; // redirect to login if not authenticated
+                        return null;
+                    }
+                    if(!res.ok) throw new Error('Network error');
+                    return res.json();
+                })
+                .then(data => {
+                    if(data) {
+                        if(data.status === 'added') {
+                            btn.classList.add('active');
+                            icon.classList.remove('fa-regular');
+                            icon.classList.add('fa-solid');
+                        } else if(data.status === 'removed') {
+                            btn.classList.remove('active');
+                            icon.classList.remove('fa-solid');
+                            icon.classList.add('fa-regular');
+                        }
+                    }
+                })
+                .catch(err => console.error('Wishlist toggle error:', err));
             }
         });
     </script>

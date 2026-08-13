@@ -7,15 +7,35 @@
     .auth-title { font-family: 'Playfair Display', serif; font-size: 28px; color: #1a1a1a; margin: 0 0 30px 0; text-align: center; }
     
     .form-group { margin-bottom: 20px; }
-    .form-group label { display: block; font-size: 12px; font-weight: 600; color: #1a1a1a; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+    
+    /* Label & Tooltip Framework UI */
+    .label-wrapper { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .label-wrapper label { font-size: 12px; font-weight: 600; color: #1a1a1a; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0; }
+    
+    .info-icon-wrapper { position: relative; display: inline-flex; align-items: center; cursor: pointer; }
+    .info-icon { width: 18px; height: 18px; border-radius: 50%; background: #e5e5e5; color: #555; font-family: 'Times New Roman', serif; font-size: 13px; font-weight: bold; font-style: italic; display: flex; align-items: center; justify-content: center; transition: background 0.3s, color 0.3s; }
+    .info-icon:hover, .info-icon.active { background: #976f44; color: #fff; }
+    
+    .help-tooltip { position: absolute; bottom: 135%; right: -6px; width: max-content; max-width: 250px; background: #1a1a1a; color: #fff; font-family: 'Jost', sans-serif; font-size: 12px; line-height: 1.5; padding: 10px 14px; border-radius: 6px; box-shadow: 0 6px 16px rgba(0,0,0,0.15); opacity: 0; visibility: hidden; transform: translateY(8px); transition: all 0.3s ease; z-index: 10; text-transform: none; font-weight: 400; letter-spacing: 0; text-align: left; pointer-events: none; }
+    .help-tooltip::after { content: ''; position: absolute; top: 100%; right: 10px; border-width: 6px; border-style: solid; border-color: #1a1a1a transparent transparent transparent; }
+    .help-tooltip.show { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
+    
+    /* Standard Input Styling */
     .auth-input { width: 100%; padding: 14px 15px; font-family: 'Jost', sans-serif; font-size: 14px; border: 1px solid #e5e5e5; background: #fafafa; transition: border 0.3s; box-sizing: border-box; }
     .auth-input:focus { border-color: #976f44; outline: none; background: #fff; }
+    
+    /* Premium Phone Input Layout Group */
+    .phone-input-group { display: flex; align-items: stretch; border: 1px solid #e5e5e5; background: #fafafa; transition: border 0.3s, background-color 0.3s; }
+    .phone-input-group:focus-within { border-color: #976f44; background: #fff; }
+    .country-code-prefix { display: flex; align-items: center; padding: 0 15px; background: #f0f0f0; border-right: 1px solid #e5e5e5; color: #333; font-size: 14px; font-weight: 600; font-family: 'Jost', sans-serif; user-select: none; }
+    .et-flag-icon { width: 20px; height: 14px; margin-right: 8px; border-radius: 2px; object-fit: cover; }
+    .phone-input-group input.auth-input { border: none; background: transparent; flex: 1; width: 100%; margin: 0; }
+    .phone-input-group input.auth-input:focus { box-shadow: none; }
     
     .auth-btn { display: block; width: 100%; background-color: #1a1a1a; color: #fff; padding: 16px; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; border: none; cursor: pointer; transition: 0.3s ease; margin-top: 30px; text-align: center; text-decoration: none; }
     .auth-btn:hover { background-color: #976f44; }
     
     .auth-error { color: #d9534f; font-size: 12px; margin-top: 6px; font-weight: 500; }
-    .auth-help { color: #888; font-size: 12px; margin-top: 6px; line-height: 1.4; }
     
     .auth-footer { text-align: center; margin-top: 25px; font-size: 14px; color: #666; border-top: 1px solid #f0f0f0; padding-top: 20px; }
     .auth-footer a { color: #976f44; text-decoration: none; font-weight: 600; transition: color 0.3s; }
@@ -26,23 +46,83 @@
     <div class="auth-card">
         <h4 class="auth-title">Create B2B Account</h4>
         
-        <form method="POST">
+        <form method="POST" action="{% url 'register' %}">
             {% csrf_token %}
             
-            {% for field in form %}
+            {% for field in user_form %}
                 <div class="form-group">
-                    <label>{{ field.label }}</label>
+                    <div class="label-wrapper">
+                        <label>{{ field.label }}</label>
+                        {% if field.help_text %}
+                        <div class="info-icon-wrapper" onclick="toggleTooltip(event, this)">
+                            <span class="info-icon">i</span>
+                            <div class="help-tooltip">{{ field.help_text|safe }}</div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
                     {{ field }}
-                    {% if field.errors %}
-                        <div class="auth-error">{{ field.errors.0 }}</div>
+                    
+                    {% if field.errors %} <div class="auth-error">{{ field.errors.0 }}</div> {% endif %}
+                </div>
+            {% endfor %}
+            
+            {% for field in profile_form %}
+                <div class="form-group">
+                    <div class="label-wrapper">
+                        <label>{{ field.label }}</label>
+                        {% if field.help_text %}
+                        <div class="info-icon-wrapper" onclick="toggleTooltip(event, this)">
+                            <span class="info-icon">i</span>
+                            <div class="help-tooltip">{{ field.help_text|safe }}</div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    {% if field.name == 'phone_number' %}
+                        <div class="phone-input-group">
+                            <div class="country-code-prefix">
+                                <img src="https://flagcdn.com/w20/et.png" alt="Ethiopia Flag" class="et-flag-icon">
+                                +251
+                            </div>
+                            {{ field }}
+                        </div>
+                    {% else %}
+                        {{ field }}
                     {% endif %}
-                    {% if field.help_text %}
-                        <div class="auth-help">{{ field.help_text }}</div>
-                    {% endif %}
+
+                    {% if field.errors %} <div class="auth-error">{{ field.errors.0 }}</div> {% endif %}
                 </div>
             {% endfor %}
             
             <button type="submit" class="auth-btn">Register Account</button>
+        </form> <div style="display: flex; align-items: center; text-align: center; margin: 25px 0; color: #999; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">
+            <span style="flex: 1; border-bottom: 1px solid #f0f0f0; margin-right: 10px;"></span>
+            Or
+            <span style="flex: 1; border-bottom: 1px solid #f0f0f0; margin-left: 10px;"></span>
+        </div>
+
+        <div id="g_id_onload"
+             data-client_id="{{ google_client_id }}"
+             data-context="use"
+             data-ux_mode="popup"
+             data-callback="handleGoogleLogin"
+             data-auto_prompt="true">
+        </div>
+
+        <div class="g_id_signin"
+             data-type="standard"
+             data-shape="rectangular"
+             data-theme="outline"
+             data-text="continue_with"
+             data-size="large"
+             data-logo_alignment="center"
+             style="display: flex; justify-content: center; width: 100%;">
+        </div>
+
+        <form id="google-login-form" method="POST" action="{% url 'google_callback' %}" style="display: none;">
+            {% csrf_token %}
+            <input type="hidden" name="credential" id="google-credential-input">
         </form>
         
         <div class="auth-footer">
@@ -51,10 +131,50 @@
     </div>
 </div>
 
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+
 <script>
+    function handleGoogleLogin(response) {
+        const inputField = document.getElementById('google-credential-input');
+        const submitForm = document.getElementById('google-login-form');
+        if (inputField && submitForm) {
+            inputField.value = response.credential;
+            submitForm.submit();
+        }
+    }
+
+    // Style classes safely appended to inputs
     document.querySelectorAll('input:not([type="hidden"]):not([type="search"]):not([type="submit"])').forEach(e => {
-        e.removeAttribute('class');
         e.classList.add('auth-input');
+    });
+
+    // Toggle Tooltip Logic
+    function toggleTooltip(event, element) {
+        event.stopPropagation(); 
+        
+        const tooltip = element.querySelector('.help-tooltip');
+        const icon = element.querySelector('.info-icon');
+        const isCurrentlyShowing = tooltip.classList.contains('show');
+        
+        document.querySelectorAll('.help-tooltip.show').forEach(t => {
+            t.classList.remove('show');
+            t.previousElementSibling.classList.remove('active');
+        });
+        
+        if (!isCurrentlyShowing) {
+            tooltip.classList.add('show');
+            icon.classList.add('active');
+        }
+    }
+
+    // Close tooltips when clicking anywhere else on the document
+    document.addEventListener('click', function(event) {
+        if (!event.target.closest('.info-icon-wrapper')) {
+            document.querySelectorAll('.help-tooltip.show').forEach(t => {
+                t.classList.remove('show');
+                t.previousElementSibling.classList.remove('active');
+            });
+        }
     });
 </script>
 {% endblock %}

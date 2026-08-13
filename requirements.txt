@@ -38,3 +38,4 @@ rest_framework_simplejwt
 djangorestframework-simplejwt
 cloudinary 
 django-cloudinary-storage
+cloudscraper

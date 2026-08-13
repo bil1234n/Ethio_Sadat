@@ -14,27 +14,52 @@
     .admin-btn-danger { background-color: #d9534f; }
     .admin-btn-danger:hover { background-color: #c9302c; }
 
-    .admin-grid { display: grid; grid-template-columns: 320px 1fr; gap: 30px; align-items: start; }
+    .admin-grid { display: grid; grid-template-columns: 350px 1fr; gap: 30px; align-items: start; }
     @media (max-width: 991px) { .admin-grid { grid-template-columns: 1fr; } }
 
     .admin-card { background: #fff; border: 1px solid #f0f0f0; padding: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
     .admin-card-title { font-size: 16px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 25px; border-bottom: 2px solid #fbf9f6; padding-bottom: 15px; }
 
     .admin-wrapper .form-group { margin-bottom: 20px; }
-    .admin-wrapper .form-group label { display: block; font-size: 13px; font-weight: 600; color: #1a1a1a; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .admin-wrapper .form-group label { display: block; font-size: 12px; font-weight: 600; color: #1a1a1a; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
     .admin-wrapper .admin-input { width: 100%; padding: 12px 15px; font-family: 'Jost', sans-serif; font-size: 14px; border: 1px solid #e5e5e5; background: #fafafa; transition: border 0.3s; box-sizing: border-box; }
     .admin-wrapper .admin-input:focus { border-color: #976f44; outline: none; background: #fff; }
+
+    /* --- PROFESSIONAL FILE UPLOAD STYLES --- */
+    .file-upload-wrapper { border: 2px dashed #d0d0d0; border-radius: 8px; background: #fafafa; padding: 20px 15px; text-align: center; cursor: pointer; transition: all 0.3s ease; display: block; color: #666; }
+    .file-upload-wrapper:hover { border-color: #976f44; background: #fff; color: #976f44; }
+    .file-upload-wrapper input[type="file"] { display: none; }
+    .file-upload-wrapper i { font-size: 24px; margin-bottom: 10px; display: block; color: #976f44; }
+    .file-upload-text { font-size: 13px; font-weight: 500; }
+
+    /* --- NEW: CUSTOM PROFESSIONAL COMBOBOX STYLES --- */
+    .custom-combo-wrap { position: relative; }
+    .custom-combo-arrow { position: absolute; right: 15px; top: 15px; color: #666; pointer-events: none; font-size: 12px; }
+    .custom-combo-dropdown { 
+        display: none; position: absolute; top: 100%; left: 0; width: 100%; background: #fff; 
+        border: 1px solid #976f44; box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 999; 
+        list-style: none; padding: 0; margin: 0; max-height: 200px; overflow-y: auto; border-radius: 0 0 4px 4px; 
+    }
+    .custom-combo-dropdown li { padding: 12px 15px; font-size: 14px; color: #1a1a1a; cursor: pointer; border-bottom: 1px solid #f0f0f0; transition: background 0.2s; }
+    .custom-combo-dropdown li:hover { background: #fbf9f6; color: #976f44; font-weight: 600; }
+    .custom-combo-dropdown.show { display: block; }
+
+    /* --- GALLERY MANAGEMENT STYLES --- */
+    .gallery-manager { margin-top: 25px; padding-top: 20px; border-top: 1px solid #eaeaea; }
+    .gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
+    .gallery-item { position: relative; border-radius: 6px; overflow: hidden; border: 1px solid #eaeaea; aspect-ratio: 1; background: #fbf9f6; }
+    .gallery-item img { width: 100%; height: 100%; object-fit: cover; }
+    .delete-img-btn { position: absolute; top: 5px; right: 5px; background: rgba(217, 83, 79, 0.95); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 10px; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+    .delete-img-btn:hover { background: #c9302c; transform: scale(1.15); }
 
     .premium-table { width: 100%; border-collapse: collapse; }
     .premium-table th { background: #fbf9f6; color: #888; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; padding: 15px; text-align: left; border-bottom: 1px solid #e5e5e5; }
     .premium-table td { padding: 15px; border-bottom: 1px solid #f0f0f0; color: #444; font-size: 14px; vertical-align: middle; }
     .premium-table tr:hover td { background-color: #fafafa; }
-
     .status-badge { display: inline-block; padding: 4px 10px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; border-radius: 3px; }
     .badge-success { background: #e8f5e9; color: #2e7d32; }
     .badge-neutral { background: #f5f5f5; color: #616161; }
     .badge-info { background: #e3f2fd; color: #1565c0; }
-
     .product-img-thumb { width: 45px; height: 45px; object-fit: cover; border-radius: 4px; border: 1px solid #eee; }
     .action-group { display: flex; gap: 8px; }
 </style>
@@ -51,21 +76,110 @@
             <h3 class="admin-card-title">
                 {% if edit_id %}Editing Product #{{ edit_id }}{% else %}Add New Product{% endif %}
             </h3>
-            <form method="POST" enctype="multipart/form-data">
+            
+            <form method="POST" enctype="multipart/form-data" id="main-product-form">
                 {% csrf_token %}
+                
+                {% if form.errors %}
+                <div style="background-color: #fce8e8; border-left: 4px solid #d9534f; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
+                    <strong style="color: #d9534f; font-size: 14px;">Please correct the errors below to create the product.</strong>
+                </div>
+                {% endif %}
+
                 {% for field in form %}
-                    <div class="form-group">
-                        <label>{{ field.label }}</label>
-                        {{ field }}
-                    </div>
+                    {% if field.name == 'clear_images' %}
+                        <div style="display:none;">{{ field }}</div>
+                    
+                    {% elif field.field.widget.input_type == 'file' %}
+                        <div class="form-group">
+                            <label>{{ field.label }} {% if field.field.required %}<span style="color: #d9534f;">*</span>{% endif %}</label>
+                            <label class="file-upload-wrapper {% if field.errors %}style="border-color: #d9534f;"{% endif %}">
+                                <i class="fa-solid fa-cloud-arrow-up"></i>
+                                <span class="file-upload-text">Click to upload files</span>
+                                {{ field }}
+                            </label>
+                            {% if field.errors %}
+                            <div style="color: #d9534f; font-size: 12px; margin-top: 5px; font-weight: 500;">
+                                <i class="fa-solid fa-circle-exclamation"></i> {{ field.errors|striptags }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                    <!-- NEW: INTERCEPT CATEGORY FIELD FOR CUSTOM DROPDOWN -->
+                    {% elif field.name == 'category' %}
+                        <div class="form-group">
+                            <label>{{ field.label }} {% if field.field.required %}<span style="color: #d9534f;">*</span>{% endif %}</label>
+                            
+                            <div class="custom-combo-wrap">
+                                {{ field }}
+                                <!-- Fake arrow to make it look like a select dropdown -->
+                                <i class="fa-solid fa-chevron-down custom-combo-arrow"></i>
+                                
+                                <!-- Custom list that is beautifully styled -->
+                                <ul class="custom-combo-dropdown" id="category-dropdown">
+                                    {% if all_categories %}
+                                        {% for cat in all_categories %}
+                                            <li>{{ cat }}</li>
+                                        {% endfor %}
+                                    {% else %}
+                                        <li>Sofa</li>
+                                        <li>Mejlis</li>
+                                        <li>Table</li>
+                                        <li>Bed</li>
+                                        <li>Cabinet</li>
+                                        <li>Side Drawer</li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+
+                            {% if field.errors %}
+                            <div style="color: #d9534f; font-size: 12px; margin-top: 5px; font-weight: 500;">
+                                <i class="fa-solid fa-circle-exclamation"></i> {{ field.errors|striptags }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    
+                    {% else %}
+                        <div class="form-group">
+                            <label>{{ field.label }} {% if field.field.required %}<span style="color: #d9534f;">*</span>{% endif %}</label>
+                            {{ field }}
+                            {% if field.errors %}
+                            <div style="color: #d9534f; font-size: 12px; margin-top: 5px; font-weight: 500;">
+                                <i class="fa-solid fa-circle-exclamation"></i> {{ field.errors|striptags }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
                 {% endfor %}
                 
                 <button type="submit" class="admin-btn" style="width: 100%; margin-top: 10px;">
                     {% if edit_id %}Save Changes{% else %}Create Product{% endif %}
                 </button>
             </form>
+
+            {% if instance and instance.images.all %}
+            <div class="gallery-manager">
+                <h4 style="font-size: 13px; font-weight: 600; color: #1a1a1a; text-transform: uppercase; letter-spacing: 0.5px; margin: 0;">Manage Gallery Images</h4>
+                
+                <div class="gallery-grid">
+                    {% for img in instance.images.all %}
+                    <div class="gallery-item">
+                        <img src="{{ img.image.url }}" alt="Gallery Image">
+                        <form method="POST" style="margin: 0; padding: 0;">
+                            {% csrf_token %}
+                            <input type="hidden" name="delete_gallery_image_id" value="{{ img.id }}">
+                            <button type="submit" class="delete-img-btn" title="Delete this image">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </form>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
             {% if edit_id %}
-                <a href="{% url 'admin_product_manage' %}" class="admin-btn admin-btn-outline" style="width: 100%; margin-top: 10px;">Cancel Edit</a>
+                <a href="{% url 'admin_product_manage' %}" class="admin-btn admin-btn-outline" style="width: 100%; margin-top: 15px;">Cancel Edit</a>
             {% endif %}
         </div>
 
@@ -89,6 +203,9 @@
                         <td>
                             {% if product.image %}
                                 <img src="{{ product.image.url }}" class="product-img-thumb">
+                                {% if product.images.all %}
+                                    <br><span style="font-size: 10px; color: #888; font-weight: 500;">+{{ product.images.count }} more</span>
+                                {% endif %}
                             {% else %}
                                 <span class="status-badge badge-neutral">None</span>
                             {% endif %}
@@ -127,11 +244,55 @@
 </div>
 
 <script>
-    // Apply custom styling to generated Django form fields
+    // 1. Apply generic styling to standard text/number inputs
     document.querySelectorAll('input:not([type="file"]):not([type="hidden"]):not([type="search"]):not([type="submit"]), textarea, select').forEach(e => {
         e.classList.add('admin-input');
-        e.removeAttribute('class'); // Strip bootstrap if forms.py injects it
-        e.classList.add('admin-input');
     });
+
+    // 2. Add JavaScript to show the selected file names instantly in the custom upload blocks
+    document.querySelectorAll('.file-upload-wrapper input[type="file"]').forEach(input => {
+        input.addEventListener('change', function() {
+            let labelText = this.parentElement.querySelector('.file-upload-text');
+            if (this.files && this.files.length > 1) {
+                labelText.innerHTML = `<span style="color:#2e7d32; font-weight:600;">${this.files.length} files selected ✓</span>`;
+            } else if (this.files && this.files.length === 1) {
+                let name = this.files[0].name;
+                if(name.length > 25) name = name.substring(0,22) + "...";
+                labelText.innerHTML = `<span style="color:#2e7d32; font-weight:600;">${name} ✓</span>`;
+            } else {
+                labelText.innerHTML = "Click to upload files";
+            }
+        });
+    });
+
+    // 3. NEW: Custom Combobox Logic for Category
+    const categoryInput = document.querySelector('input[name="category"]');
+    const categoryDropdown = document.getElementById('category-dropdown');
+    
+    if (categoryInput && categoryDropdown) {
+        // Disconnect browser's native datalist autocomplete to stop it from interfering
+        categoryInput.setAttribute('autocomplete', 'off');
+        categoryInput.removeAttribute('list');
+        
+        // Show the full dropdown list when clicking the input
+        categoryInput.addEventListener('click', function() {
+            categoryDropdown.classList.add('show');
+        });
+        
+        // Hide the dropdown list when clicking anywhere else on the screen
+        document.addEventListener('click', function(e) {
+            if (!categoryInput.contains(e.target) && !categoryDropdown.contains(e.target)) {
+                categoryDropdown.classList.remove('show');
+            }
+        });
+
+        // When a user clicks a list item, update the input box and hide the dropdown
+        categoryDropdown.querySelectorAll('li').forEach(function(li) {
+            li.addEventListener('click', function() {
+                categoryInput.value = this.innerText;
+                categoryDropdown.classList.remove('show');
+            });
+        });
+    }
 </script>
 {% endblock %}

@@ -16,7 +16,13 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-fallback-key')
 DEBUG = True
 
 # Allow Render and Localhost
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.onrender.com']
+ALLOWED_HOSTS = [
+    'localhost', 
+    '127.0.0.1', 
+    '.onrender.com', 
+    'www.ethiosadat.com',
+    'ethiosadat.com',
+    '*']
 RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
@@ -53,7 +59,6 @@ INSTALLED_APPS = [
     'api',
     'accounts',
     'products',
-    'orders',
     
     'socialMedia',
     'message',
@@ -87,6 +92,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 
                 'products.context_processors.global_categories',
+                'accounts.context_processors.notifications_context',
             ],
         },
     },
@@ -162,7 +168,6 @@ mimetypes.add_type("model/gltf+json", ".gltf")
 mimetypes.add_type("model/vnd.usdz+zip", ".usdz")
 
 
-CHAPA_SECRET_KEY = os.environ.get('CHAPA_SECRET_KEY')
 
 # 1. Map your .env variables to Cloudinary config
 CLOUDINARY_STORAGE = {
@@ -187,3 +192,15 @@ IG_ACCESS_TOKEN = os.environ.get('IG_ACCESS_TOKEN')
 IG_USER_ID = os.environ.get('IG_USER_ID')
 FB_ACCESS_TOKEN = os.environ.get('FB_ACCESS_TOKEN')
 FB_PAGE_ID = os.environ.get('FB_PAGE_ID')
+GOOGLE_WEB_CLIENT_ID = os.environ.get('GOOGLE_WEB_CLIENT_ID')
+GOOGLE_ANDROID_CLIENT_ID = os.environ.get('GOOGLE_ANDROID_CLIENT_ID')
+
+# --- GOOGLE AUTHENTICATION ---
+GOOGLE_CLIENT_ID = os.environ.get(
+    'GOOGLE_CLIENT_ID', 
+    os.environ.get('GOOGLE_CLIENT_ID')
+)
+
+# Allow Google One Tap popup to communicate with Django
+SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin-allow-popups'
+SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
