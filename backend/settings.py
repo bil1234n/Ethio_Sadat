@@ -109,18 +109,6 @@ if DATABASE_URL:
     DATABASES = {
         'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, conn_health_checks=True)
     }
-else:
-    # Use Local PostgreSQL for development
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'furniture_db_2',
-            'USER': 'postgres',        
-            'PASSWORD': 'Bilal1234', 
-            'HOST': 'localhost',
-            'PORT': '5432',
-        }
-    }
 
 
 # Password validation
