@@ -15,6 +15,7 @@ class SocialMediaPost(models.Model):
         ('instagram', 'Instagram'),
         ('facebook', 'Facebook'),
         ('tiktok', 'TikTok'),
+        ('telegram', 'Telegram'),
     ]
 
     platform = models.CharField(max_length=20, choices=PLATFORM_CHOICES, default='facebook')
@@ -38,8 +39,8 @@ class SocialMediaPost(models.Model):
 # caches immediately so the change is reflected right away instead of
 # waiting for the cache to expire.
 SOCIAL_FEED_CACHE_KEYS = [
-    'bilyonarc_social_feeds_v18',  # socialMedia/views.py (web template)
-    'rn_social_feeds_api_v5',      # api/views.py (mobile app API)
+    'bilyonarc_social_feeds_v19',  # socialMedia/views.py (web template)
+    'rn_social_feeds_api_v6',      # api/views.py (mobile app API)
 ]
 
 
