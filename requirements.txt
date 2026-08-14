@@ -39,3 +39,5 @@ djangorestframework-simplejwt
 cloudinary 
 django-cloudinary-storage
 cloudscraper
+
+google-auth>=2.0.0
