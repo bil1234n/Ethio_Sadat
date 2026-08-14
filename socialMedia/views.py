@@ -1,6 +1,5 @@
 import logging
 import requests
-import urllib.parse
 import xml.etree.ElementTree as ET
 from django.shortcuts import render
 from django.core.cache import cache
@@ -8,13 +7,6 @@ from django.conf import settings
 from .models import SocialMediaPost
 
 logger = logging.getLogger(__name__)
-
-# Helper function to bypass CDN blocking
-def proxy_img(url):
-    if not url:
-        return ""
-    encoded_url = urllib.parse.quote(url)
-    return f"https://wsrv.nl/?url={encoded_url}"
 
 def get_youtube_videos(channel_id):
     """
@@ -76,7 +68,7 @@ def get_youtube_videos(channel_id):
     return youtube_videos
 
 def social_media_feed(request):
-    cache_key = 'bilyonarc_social_feeds_v18'  # Bumped: source switched from hardcoded lists to SocialMediaPost DB records
+    cache_key = 'bilyonarc_social_feeds_v19'  # Bumped: Telegram switched from RSS to SocialMediaPost DB records
     context = cache.get(cache_key)
 
     if context is None:
@@ -87,10 +79,6 @@ def social_media_feed(request):
         facebook_posts = []
         telegram_posts = []
         tiktok_posts = []
-
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-        }
 
         # 2. INSTAGRAM (admin-managed via SocialMediaPost)
         try:
@@ -118,19 +106,16 @@ def social_media_feed(request):
         except Exception as e:
             logger.error(f"Facebook Error: {e}")
 
-        # 4. TELEGRAM
+        # 4. TELEGRAM (admin-managed via SocialMediaPost)
         try:
-            tg_rss_url = "https://rss.app/feeds/v1.1/g8Edst4EDnIBq9ml.json"
-            response = requests.get(tg_rss_url, headers=headers, timeout=5)
-            if response.status_code == 200:
-                for item in response.json().get('items', [])[:6]:
-                    text = item.get('title', '')
-                    telegram_posts.append({
-                        'image': proxy_img(item.get('image', '')),
-                        'content': (text[:150] + '...') if len(text) > 150 else text,
-                        'date': item.get('date_published', 'Recent')[:10],
-                        'link': item.get('url')
-                    })
+            for item in SocialMediaPost.objects.filter(platform='telegram'):
+                telegram_posts.append({
+                    'id': item.id,
+                    'image': item.image.url if item.image else '',
+                    'content': item.caption,
+                    'link': item.link,
+                    'date': item.date.isoformat() if item.date else '',
+                })
         except Exception as e:
             logger.error(f"Telegram Error: {e}")
 
