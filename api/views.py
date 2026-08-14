@@ -17,7 +17,6 @@ import uuid
 import requests
 from django.conf import settings
 from django.urls import reverse
-import urllib.parse
 import logging
 from django.core.cache import cache
 from rest_framework.permissions import AllowAny
@@ -124,13 +123,6 @@ class AdminFeedbackReplyAPIView(generics.UpdateAPIView):
         serializer.save(is_replied=True)
 
 
-# Helper function to bypass CDN blocking
-def proxy_img(url):
-    if not url:
-        return ""
-    encoded_url = urllib.parse.quote(url)
-    return f"https://wsrv.nl/?url={encoded_url}"
-
 def get_youtube_videos_api(channel_id):
     """
     Resilient YouTube Fetcher for DRF:
@@ -194,10 +186,11 @@ class SocialMediaAPIView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
-        # Bumped version: instagram/facebook/tiktok now come from the admin-managed
-        # SocialMediaPost model instead of hardcoded lists. Cache is also flushed
-        # automatically whenever a post is created/edited/deleted (see socialMedia/models.py).
-        cache_key = 'rn_social_feeds_api_v5'
+        # Bumped version: instagram/facebook/tiktok/telegram now all come from the
+        # admin-managed SocialMediaPost model instead of hardcoded lists / RSS.
+        # Cache is also flushed automatically whenever a post is created/edited/
+        # deleted (see socialMedia/models.py).
+        cache_key = 'rn_social_feeds_api_v6'
         data = cache.get(cache_key)
 
         if data is None:
@@ -211,7 +204,6 @@ class SocialMediaAPIView(APIView):
                 "telegram": [],
                 "tiktok": []
             }
-            headers = {'User-Agent': 'Mozilla/5.0'}
 
             # 2. INSTAGRAM (admin-managed via SocialMediaPost)
             try:
@@ -239,18 +231,16 @@ class SocialMediaAPIView(APIView):
             except Exception as e:
                 logger.error(f"FB Error: {e}")
 
-            # 4. TELEGRAM
+            # 4. TELEGRAM (admin-managed via SocialMediaPost)
             try:
-                res = requests.get("https://rss.app/feeds/v1.1/g8Edst4EDnIBq9ml.json", headers=headers, timeout=5)
-                if res.status_code == 200:
-                    for item in res.json().get('items', [])[:6]:
-                        text = item.get('title', '')
-                        data["telegram"].append({
-                            'image': proxy_img(item.get('image', '')),
-                            'text': (text[:150] + '...') if len(text) > 150 else text,
-                            'link': item.get('url'),
-                            'date': item.get('date_published', 'Recent')[:10]
-                        })
+                for item in SocialMediaPost.objects.filter(platform='telegram'):
+                    data["telegram"].append({
+                        'id': item.id,
+                        'image': item.image.url if item.image else '',
+                        'text': item.caption,
+                        'link': item.link,
+                        'date': item.date.isoformat() if item.date else '',
+                    })
             except Exception as e:
                 logger.error(f"TG Error: {e}")
 
