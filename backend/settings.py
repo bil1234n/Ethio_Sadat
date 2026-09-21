@@ -12,6 +12,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # --- SECURITY SETTINGS ---
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-fallback-key')
 
+<<<<<<< HEAD
 # DEBUG is True locally, but False on Render
 DEBUG = True
 
@@ -29,6 +30,38 @@ if RENDER_EXTERNAL_HOSTNAME:
 
 # CSRF Trust for Render URLs
 CSRF_TRUSTED_ORIGINS = ['https://*.onrender.com']
+=======
+# --- ENVIRONMENT DETECTION ---
+# A DATABASE_URL is only ever set on the hosted environment (Vercel + Neon),
+# so its presence is what tells us we are running in production.
+DATABASE_URL = os.environ.get('DATABASE_URL')
+IS_PRODUCTION = bool(DATABASE_URL)
+
+# DEBUG is True locally, and automatically False in production.
+# Can still be forced either way with a DEBUG env var.
+DEBUG = os.environ.get('DEBUG', str(not IS_PRODUCTION)).strip().lower() == 'true'
+
+# Allow Vercel, Render and Localhost
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '.onrender.com',
+    '.vercel.app',
+    'www.ethiosadat.com',
+    'ethiosadat.com',
+    '*']
+RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+
+# CSRF Trust for hosted URLs
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.onrender.com',
+    'https://*.vercel.app',
+    'https://ethiosadat.com',
+    'https://www.ethiosadat.com',
+]
+>>>>>>> 61b89fd (Initial deployment build 2.855)
 
 CORS_ALLOW_ALL_ORIGINS = True
 
@@ -102,8 +135,14 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 
 # --- DATABASE ---
+<<<<<<< HEAD
 DATABASE_URL = os.environ.get('DATABASE_URL')
 
+=======
+# In production (Vercel) the hosted Neon Postgres connection string is read from
+# the DATABASE_URL environment variable. Locally, where DATABASE_URL is not set,
+# it falls back to the local Postgres instance so development is unchanged.
+>>>>>>> 61b89fd (Initial deployment build 2.855)
 if DATABASE_URL:
     DATABASES = {
         'default': dj_database_url.config(
@@ -112,6 +151,20 @@ if DATABASE_URL:
             ssl_require=True,  # Neon requires SSL
         )
     }
+<<<<<<< HEAD
+=======
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ.get('DB_NAME', 'furniture_db_2'),
+            'USER': os.environ.get('DB_USER', 'postgres'),
+            'PASSWORD': os.environ.get('DB_PASSWORD', 'Bilal1234'),
+            'HOST': os.environ.get('DB_HOST', 'localhost'),
+            'PORT': os.environ.get('DB_PORT', '5432'),
+        }
+    }
+>>>>>>> 61b89fd (Initial deployment build 2.855)
 
 
 # Password validation

@@ -38,7 +38,7 @@ logger = logging.getLogger(__name__)
 @api_view(['GET'])
 def api_root(request):
     return Response({
-        "message": "Welcome to the B2B Hub API",
+        "message": "Welcome to the Ethio Sadat API",
         "endpoints": {
             "products": "/api/products/",
             "auth_token": "/api/token/",
@@ -64,6 +64,54 @@ class RegisterAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+<<<<<<< HEAD
+=======
+class DeleteAccountAPIView(APIView):
+    """
+    Permanently delete the authenticated user's account and everything
+    attached to it.
+
+    Required by App Store Review Guideline 5.1.1(v): any app that lets a user
+    create an account must also let them delete it from inside the app.
+
+    Every model that points at User does so with on_delete=models.CASCADE
+    (UserProfile, Notification, Feedback, Wishlist), so a single delete()
+    removes the profile, notifications, messages and wishlist rows with it.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request):
+        user = request.user
+        username = user.username
+
+        # Staff and superuser accounts are created by us, not self-registered,
+        # so 5.1.1(v) does not cover them. Refusing here stops an App Review
+        # tester (or anyone signed in as staff) from destroying the account
+        # that runs the shop.
+        if user.is_staff or user.is_superuser:
+            return Response(
+                {"error": "Staff accounts cannot be deleted from the app. "
+                          "Contact the site administrator."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        try:
+            user.delete()
+        except Exception as exc:
+            logger.error("Account deletion failed for %s: %s", username, exc)
+            return Response(
+                {"error": "We could not delete your account. Please contact support."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        logger.info("Account permanently deleted: %s", username)
+        return Response(
+            {"message": "Your account and all associated data have been permanently deleted."},
+            status=status.HTTP_200_OK
+        )
+
+
+>>>>>>> 61b89fd (Initial deployment build 2.855)
 class UserProfileAPIView(APIView):
     permission_classes = [IsAuthenticated] # Only logged in users can access!
 
