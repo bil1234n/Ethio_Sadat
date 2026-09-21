@@ -64,8 +64,6 @@ class RegisterAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-<<<<<<< HEAD
-=======
 class DeleteAccountAPIView(APIView):
     """
     Permanently delete the authenticated user's account and everything
@@ -111,7 +109,6 @@ class DeleteAccountAPIView(APIView):
         )
 
 
->>>>>>> 61b89fd (Initial deployment build 2.855)
 class UserProfileAPIView(APIView):
     permission_classes = [IsAuthenticated] # Only logged in users can access!
 
@@ -136,13 +133,13 @@ class ProductListCreateAPIView(generics.ListCreateAPIView):
     def get_permissions(self):
         if self.request.method == 'POST':
             return [IsAdminUser()] # Only Admins can add products
-        return[] # Anyone can view products
+        return [] # Anyone can view products
 
 # 2. Handles PUT and DELETE (Admins only)
 class ProductDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    permission_classes =[IsAdminUser] # Only admins can edit or delete
+    permission_classes = [IsAdminUser] # Only admins can edit or delete
 
 # USER: Get own messages & Create new message
 class FeedbackListCreateAPIView(generics.ListCreateAPIView):
@@ -234,10 +231,6 @@ class SocialMediaAPIView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
-        # Bumped version: instagram/facebook/tiktok/telegram now all come from the
-        # admin-managed SocialMediaPost model instead of hardcoded lists / RSS.
-        # Cache is also flushed automatically whenever a post is created/edited/
-        # deleted (see socialMedia/models.py).
         cache_key = 'rn_social_feeds_api_v6'
         data = cache.get(cache_key)
 
@@ -305,13 +298,12 @@ class SocialMediaAPIView(APIView):
             except Exception as e:
                 logger.error(f"TK Error: {e}")
 
-            # Cache the successfully built JSON payload
             cache.set(cache_key, data, 1800)
 
         return Response(data)
 
 
-# --- SOCIAL MEDIA MANAGEMENT (admin CRUD, mirrors the Product admin pattern) ---
+# --- SOCIAL MEDIA MANAGEMENT ---
 class SocialMediaPostListCreateAPIView(generics.ListCreateAPIView):
     """Handles GET (anyone) and POST (admins only) for social media posts."""
     serializer_class = SocialMediaPostSerializer
@@ -340,7 +332,7 @@ class SocialMediaPostDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
         return [IsAdminUser()]
 
 
-# --- SITE SETTINGS (admin-editable app config) ---
+# --- SITE SETTINGS ---
 class SiteSettingsAPIView(APIView):
     """
     GET: anyone can read current settings (e.g. the mobile app needs the
@@ -402,11 +394,10 @@ class MobileGoogleLoginAPIView(APIView):
             return Response({"error": "No ID token provided."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            # ✅ FIX — verify without audience enforcement, then check manually
             idinfo = id_token.verify_oauth2_token(token, google_requests.Request())
             VALID_CLIENT_IDS = [
                 settings.GOOGLE_WEB_CLIENT_ID,
-                settings.GOOGLE_ANDROID_CLIENT_ID,  # add both to settings.py
+                settings.GOOGLE_ANDROID_CLIENT_ID,
             ]
             if idinfo.get('aud') not in VALID_CLIENT_IDS:
                 return Response({"error": "Invalid token audience."}, status=status.HTTP_401_UNAUTHORIZED)
@@ -418,7 +409,6 @@ class MobileGoogleLoginAPIView(APIView):
             if not email:
                 return Response({"error": "No email address associated with this Google account."}, status=status.HTTP_400_BAD_REQUEST)
 
-            # 2. Match or Create the user (reusing your accounts/views.py logic)
             user = User.objects.filter(email__iexact=email).first()
 
             if not user:
@@ -438,7 +428,6 @@ class MobileGoogleLoginAPIView(APIView):
                 user.set_unusable_password()
                 user.save()
 
-            # 3. Generate JWT Tokens for the mobile app session
             refresh = RefreshToken.for_user(user)
 
             return Response({
