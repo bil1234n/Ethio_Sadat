@@ -2,11 +2,7 @@
 from django.urls import path
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .views import (
-<<<<<<< HEAD
-    api_root, RegisterAPIView, UserProfileAPIView,
-=======
     api_root, RegisterAPIView, UserProfileAPIView, DeleteAccountAPIView,
->>>>>>> 61b89fd (Initial deployment build 2.855)
     ProductListCreateAPIView, ProductDetailAPIView,
     FeedbackListCreateAPIView, AdminFeedbackListAPIView, AdminFeedbackReplyAPIView,
     SocialMediaAPIView, NotificationListAPIView, NotificationReadAPIView,
@@ -26,12 +22,9 @@ urlpatterns = [
     path('register/', RegisterAPIView.as_view(), name='api_register'),
     path('profile/', UserProfileAPIView.as_view(), name='api_profile'),
 
-<<<<<<< HEAD
-=======
     # --- ACCOUNT DELETION (App Store Guideline 5.1.1(v)) ---
     path('profile/delete/', DeleteAccountAPIView.as_view(), name='api_profile_delete'),
 
->>>>>>> 61b89fd (Initial deployment build 2.855)
     # --- GOOGLE MOBILE API ENDPOINT ---
     path('auth/google/', MobileGoogleLoginAPIView.as_view(), name='api_google_login'),
 
